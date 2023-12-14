@@ -2,7 +2,7 @@ version: '3'
 
 services:
   apache:
-    container_name: apache
+    container_name: tubuyaki_server
     build:
       context: .
       dockerfile: ./docker/apache/Dockerfile
@@ -20,7 +20,7 @@ services:
     networks:
       - net1
   db:
-    container_name: db
+    container_name: tubuyaki_db
     build:
       context: .
       dockerfile: ./docker/db/Dockerfile
