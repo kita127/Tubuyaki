@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\LogoutController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,8 +15,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/login', [LoginController::class, 'index'])->name('login');
+Route::post('/login', [LoginController::class, 'authenticate']);
+Route::post('/logout', [LogoutController::class, 'logout']);
 
-Route::get('/hoge', \App\Http\Controllers\HogeDir\HogeController::class);
+Route::get('/', function () {
+    // 認証済みユーザーのみがこのルートにアクセス可能
+//    return view('welcome');
+    return view('top_sample');
+})->middleware('auth');
