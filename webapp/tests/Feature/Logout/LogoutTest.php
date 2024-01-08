@@ -17,7 +17,7 @@ class LogoutTest extends TestCase
         $user = User::factory()->create();
 
         // 実行
-        $response = $this->actingAs($user)->get('/logout');
+        $response = $this->actingAs($user)->post('/logout');
 
         // 検証
         $this->assertSame(302, $response->getStatusCode(), 'ログアウト後はリダイレクト');

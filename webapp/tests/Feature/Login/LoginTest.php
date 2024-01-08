@@ -28,7 +28,7 @@ class LoginTest extends TestCase
 
         // 検証
         $this->assertSame(302, $response->getStatusCode(), '認証成功後はリダイレクト');
-        $response->assertRedirect('welcom');
+        $response->assertRedirect('');
     }
 
     /**
