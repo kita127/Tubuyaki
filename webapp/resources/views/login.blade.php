@@ -17,7 +17,14 @@
                 {{ csrf_field() }}
                 <div>
                     <p>email</p>
-                    <input type="text" name="email">
+                    <input type="email" name="email" value="{{ old('email') }}" required autofocus>
+
+                    @error('email')
+                        <div>
+                            {{ $message }}
+                        </div>
+                    @enderror
+
                 </div>
                 <div>
                     <p>password</p>

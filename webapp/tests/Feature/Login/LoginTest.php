@@ -29,6 +29,7 @@ class LoginTest extends TestCase
         // 検証
         $this->assertSame(302, $response->getStatusCode(), '認証成功後はリダイレクト');
         $response->assertRedirect('');
+        $response->assertSessionHasNoErrors();
     }
 
     /**
@@ -47,7 +48,7 @@ class LoginTest extends TestCase
 
         // 検証
         $this->assertSame(302, $response->getStatusCode(), '認証成功後はリダイレクト');
-        $response->assertRedirect('');
+        $response->assertSessionHasErrors(['email' => 'The provided credentials do not match our records.']);
     }
 
     //////////////////////////////////////
