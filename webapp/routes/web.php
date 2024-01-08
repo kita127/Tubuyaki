@@ -21,6 +21,5 @@ Route::post('/logout', [LogoutController::class, 'logout']);
 
 Route::get('/', function () {
     // 認証済みユーザーのみがこのルートにアクセス可能
-//    return view('welcome');
-    return view('top_sample');
+    return view('index');
 })->middleware('auth');
