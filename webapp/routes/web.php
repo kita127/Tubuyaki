@@ -14,9 +14,10 @@ use App\Http\Controllers\LoginController;
 |
 */
 
-Route::get('/login', [LoginController::class, 'index']);
+Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [LoginController::class, 'authenticate']);
 
 Route::get('/', function () {
+    // 認証済みユーザーのみがこのルートにアクセス可能
     return view('welcome');
-});
+})->middleware('auth');
