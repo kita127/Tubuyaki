@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,8 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::post('/login', [LoginController::class, 'authenticate']);
+
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::get('/hoge', \App\Http\Controllers\HogeDir\HogeController::class);
