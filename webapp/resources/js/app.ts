@@ -6,9 +6,8 @@ import './bootstrap';
 // window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 import { createApp } from 'vue';
+import App from "./components/App.vue"
 
-const app = createApp();
-
-console.log(app.version);
+const app = createApp(App);
 
 app.mount('#app');
