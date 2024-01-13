@@ -19,7 +19,7 @@ Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [LoginController::class, 'authenticate']);
 Route::post('/logout', [LogoutController::class, 'logout']);
 
-Route::get('/', function () {
+Route::get('/{any}', function () {
     // 認証済みユーザーのみがこのルートにアクセス可能
     return view('index');
-})->middleware('auth');
+})->where('any', '.*')->middleware('auth');
