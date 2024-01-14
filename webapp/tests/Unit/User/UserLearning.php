@@ -4,7 +4,6 @@ namespace Tests\Unit;
 
 use App\Repositories\User\UserRepository;
 use Tests\TestCase;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class UserLearning extends TestCase
@@ -16,6 +15,7 @@ class UserLearning extends TestCase
         /** @var UserRepository $repo */
         $repo = app()->make(UserRepository::class);
         $user = $repo->find(1);
+        $this->assertTrue($user instanceof \App\Entities\User);
         $this->assertSame(
             [
                 'id' => 1,
