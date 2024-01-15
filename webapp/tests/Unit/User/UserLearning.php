@@ -23,7 +23,7 @@ class UserLearning extends TestCase
                 'id' => 1,
                 'name' => 'admin',
                 'email' => 'admin@example.com',
-                'password' => '$2y$10$4aSkjUUrTvuwcwBOAsw6a.N.pW.iJ2e0JPo48tSLAVLY9qmiq24F2',
+                'password' => $user->password,  // パスワードはハッシュが変わるのでみない
             ],
             $user->toArray()
         );
