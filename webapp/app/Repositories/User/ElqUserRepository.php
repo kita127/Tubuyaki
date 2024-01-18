@@ -15,6 +15,7 @@ class ElqUserRepository implements UserRepository
             name: $elqUser->name,
             email: $elqUser->email,
             password: $elqUser->password,
+            remember_token: $elqUser->remember_token,
         );
     }
 }
