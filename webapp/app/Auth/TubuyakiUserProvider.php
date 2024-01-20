@@ -58,18 +58,11 @@ class TubuyakiUserProvider implements UserProvider
     {
         $user->setRememberToken($token);
 
-        $timestamps = $user->timestamps;
-
-        $user->timestamps = false;
-
         if (!($user instanceof TubuyakiUser)) {
             throw new LogicException();
         }
         $repo = app()->make(UserRepository::class);
         $user->save($repo);
-
-        $user->timestamps = $timestamps;
-
     }
 
     /**

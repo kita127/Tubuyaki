@@ -8,6 +8,23 @@ use App\Entities\User as UserEntity;
 
 class TubuyakiUser implements Authenticatable
 {
+    public static function create(
+        ?int $id,
+        string $name,
+        string $email,
+        string $password,
+        ?string $remember_token
+    ): static {
+        $entity = new UserEntity(
+            id: $id,
+            name: $name,
+            email: $email,
+            password: $password,
+            remember_token: $remember_token,
+        );
+        return new static(entity: $entity);
+    }
+
     public function __construct(
         private UserEntity $entity,
     ) {

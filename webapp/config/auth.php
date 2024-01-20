@@ -62,7 +62,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'tubuyaki_user',
-            'model' => App\Services\TubuyakiUser\TubuyakiUser::class,
+//            'model' => App\Services\TubuyakiUser\TubuyakiUser::class,
         ],
         // 'users' => [
         //     'driver' => 'eloquent',
