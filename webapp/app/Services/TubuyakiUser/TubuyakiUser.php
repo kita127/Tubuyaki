@@ -2,6 +2,7 @@
 
 namespace App\Services\TubuyakiUser;
 
+use App\Repositories\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use App\Entities\User as UserEntity;
 
@@ -71,6 +72,11 @@ class TubuyakiUser implements Authenticatable
     public function getRememberTokenName(): string
     {
         return $this->entity->getRememberTokenName();
+    }
+
+    public function save(UserRepository $repo): void
+    {
+        $repo->save($this->entity);
     }
 
 }

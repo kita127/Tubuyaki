@@ -5,11 +5,11 @@ namespace App\Entities;
 class User extends Entity
 {
     public function __construct(
-        public readonly int $id,
+        public readonly ?int $id,
         public string $name,
         public string $email,
         public string $password,
-        public string $remember_token,
+        public ?string $remember_token,
     ) {
     }
 
