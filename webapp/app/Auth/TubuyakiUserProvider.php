@@ -3,7 +3,7 @@
 namespace App\Auth;
 
 use App\Repositories\User\UserRepository;
-use App\Services\TubuyakiUser\TubuyakiUser;
+use App\Services\TubuyakiUser;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
 use LogicException;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\TubuyakiUser;
+namespace App\Services;
 
 use App\Repositories\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
