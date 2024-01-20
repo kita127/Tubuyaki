@@ -65,7 +65,7 @@ class TubuyakiUser implements Authenticatable
      *
      * @return string
      */
-    public function getRememberToken(): string
+    public function getRememberToken(): ?string
     {
         return $this->entity->remember_token;
     }
