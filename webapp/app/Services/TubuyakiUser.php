@@ -5,9 +5,12 @@ namespace App\Services;
 use App\Repositories\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use App\Entities\User as UserEntity;
+use Illuminate\Contracts\Support\Arrayable;
 
-class TubuyakiUser implements Authenticatable
+class TubuyakiUser implements Authenticatable, Arrayable
 {
+    public readonly ?int $id;
+
     public static function create(
         ?int $id,
         string $name,
@@ -28,7 +31,7 @@ class TubuyakiUser implements Authenticatable
     public function __construct(
         private UserEntity $entity,
     ) {
-
+        $this->id = $this->entity->id;
     }
     /**
      * Get the name of the unique identifier for the user.
@@ -96,4 +99,16 @@ class TubuyakiUser implements Authenticatable
         $repo->save($this->entity);
     }
 
+    public function toArray(): array
+    {
+        return $this->entity->toArray();
+    }
+
+    public function toRistrictedArray(): array
+    {
+        $array = $this->toArray();
+        unset($array['password']);
+        unset($array[$this->entity->getRememberTokenName()]);
+        return $array;
+    }
 }

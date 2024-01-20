@@ -2,7 +2,9 @@
 
 namespace App\Entities;
 
-abstract class Entity
+use Illuminate\Contracts\Support\Arrayable;
+
+abstract class Entity implements Arrayable
 {
     public function toArray(): array
     {
