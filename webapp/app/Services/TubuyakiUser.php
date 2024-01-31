@@ -96,11 +96,6 @@ class TubuyakiUser implements Authenticatable, Arrayable
         return $this->entity->getRememberTokenName();
     }
 
-    public function save(UserRepository $repo): void
-    {
-        $repo->save($this->entity);
-    }
-
     public function toArray(): array
     {
         return $this->entity->toArray();

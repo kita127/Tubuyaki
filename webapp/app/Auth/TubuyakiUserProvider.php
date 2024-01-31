@@ -61,8 +61,9 @@ class TubuyakiUserProvider implements UserProvider
         if (!($user instanceof TubuyakiUser)) {
             throw new LogicException();
         }
+        /** @var UserRepository $repo */
         $repo = app()->make(UserRepository::class);
-        $user->save($repo);
+        $repo->save($user->getEntity());
     }
 
     /**
