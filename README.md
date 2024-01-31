@@ -27,3 +27,12 @@ $ make down
     1. `$ docker compose exec apache bash`
 1. `$ npm run dev` を実行する
 1.  ブラウザから `http://localhost:80` にアクセス
+
+### Test
+
+`apache`コンテナに入って以下のコマンドを実行する。
+
+```
+php artisan test --env=testing
+```
+
