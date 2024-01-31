@@ -13,6 +13,7 @@ class TubuyakiUser implements Authenticatable, Arrayable
 
     public static function create(
         ?int $id,
+        string $account_name,
         string $name,
         string $email,
         string $password,
@@ -20,6 +21,7 @@ class TubuyakiUser implements Authenticatable, Arrayable
     ): static {
         $entity = new UserEntity(
             id: $id,
+            account_name: $account_name,
             name: $name,
             email: $email,
             password: $password,
@@ -110,5 +112,10 @@ class TubuyakiUser implements Authenticatable, Arrayable
         unset($array['password']);
         unset($array[$this->entity->getRememberTokenName()]);
         return $array;
+    }
+
+    public function getEntity(): UserEntity
+    {
+        return $this->entity;
     }
 }

@@ -15,6 +15,7 @@ class MeTest extends TestCase
     {
         $user = TubuyakiUser::create(
             id: 1,
+            account_name: 'test_user',
             name: '検証太郎',
             email: 'test@example.com',
             password: '1111aaaa',
@@ -25,6 +26,7 @@ class MeTest extends TestCase
         $this->assertSame(
             [
                 'id' => 1,
+                'account_name' => 'test_user',
                 'name' => '検証太郎',
                 'email' => 'test@example.com',
             ],

@@ -22,6 +22,7 @@ class ElqUserRepository implements UserRepository
             // update
             $elqUser = ElqUser::findOrFail($user->id);
         }
+        $elqUser->account_name = $user->account_name;
         $elqUser->name = $user->name;
         $elqUser->email = $user->email;
         $elqUser->password = $user->password;
@@ -50,6 +51,7 @@ class ElqUserRepository implements UserRepository
     {
         return new User(
             id: $elqUser->id,
+            account_name: $elqUser->account_name,
             name: $elqUser->name,
             email: $elqUser->email,
             password: $elqUser->password,

@@ -17,6 +17,7 @@ class LoginTest extends TestCase
      */
     public function test01_01_メールアドレスとパスが一致したらログイン後にリダイレクト(): void
     {
+        // TODO: Eloquent直接触るのやめる
         // 準備
         $user = $this->createUser();
 
@@ -58,7 +59,8 @@ class LoginTest extends TestCase
     private function createUser(array $params = []): User
     {
         $user = new User(array_merge([
-            'name' => 'test_user',
+            'account_name' => 'test_user',
+            'name' => '検証次郎',
             'email' => 'test_user@example.com',
             'password' => Hash::make('testuserpass'),
         ], $params));
