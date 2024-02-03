@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,7 +15,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    $user = $request->user();
-    return $user->toRistrictedArray();
-});
+Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'index']);
+Route::post('/user', [UserController::class, 'store']);

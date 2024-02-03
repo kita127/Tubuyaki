@@ -1,9 +1,10 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Logout;
 
 use Tests\TestCase;
 use App\Services\TubuyakiUser;
+use App\Repositories\User\UserRepository;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
@@ -15,7 +16,8 @@ class LogoutTest extends TestCase
     {
         // 準備
         $user = TubuyakiUser::create(
-            id: 1,
+            app()->make(UserRepository::class),
+            account_name: 'test_user',
             name: '検証太郎',
             email: 'test@example.com',
             password: '1111aaaa',

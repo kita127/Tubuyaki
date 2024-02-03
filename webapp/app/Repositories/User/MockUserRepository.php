@@ -3,8 +3,8 @@
 namespace App\Repositories\User;
 
 use App\Entities\User;
-use LogicException;
 use OutOfBoundsException;
+use Illuminate\Support\Collection;
 
 class MockUserRepository implements UserRepository
 {
@@ -36,37 +36,80 @@ class MockUserRepository implements UserRepository
         return static::$dummyRecords[$id];
     }
 
-    public function save(User $user): bool
+    public function save(User $user): User
     {
         if ($user->id && isset(static::$dummyRecords[$user->id])) {
             // update
             static::$dummyRecords[$user->id] = $user;
+            return $user;
         } else {
             // create
             $nextId = $this->getMaxId() + 1;
             $newUser = new User(
                 id: $nextId,
+                account_name: $user->account_name,
                 name: $user->name,
                 email: $user->email,
                 password: $user->password,
                 remember_token: $user->remember_token,
             );
             static::$dummyRecords[$nextId] = $newUser;
+            return $newUser;
         }
-        return true;
     }
 
     /**
      * @param array<string, mixed> $where
      * @return User | null
      */
-    public function findOneBy(array $where): never
+    public function findOneBy(array $where): ?User
     {
-        throw new LogicException('unimplemented');
+        foreach (static::$dummyRecords as $record) {
+            if ($this->match($record, $where)) {
+                return $record;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param array<string, mixed> $where
+     * @return Collection<int, User>
+     */
+    public function findAllBy(array $where): Collection
+    {
+        $users = collect([]);
+        foreach (static::$dummyRecords as $user) {
+            if ($this->match($user, $where)) {
+                $users->put($user->id, $user);
+            }
+        }
+        return $users;
+    }
+
+    /**
+     * @param User $user
+     * @param array<string, mixed> $where
+     * @return bool
+     */
+    private function match(User $user, array $where): bool
+    {
+        foreach ($where as $key => $value) {
+            if (!property_exists($user, $key)) {
+                return false;
+            }
+            if ($user->$key !== $value) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private function getMaxId(): int
     {
+        if (count(static::$dummyRecords) <= 0) {
+            return 0;
+        }
         return max(array_keys(static::$dummyRecords));
     }
 }

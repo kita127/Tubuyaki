@@ -12,20 +12,22 @@ class TubuyakiUser implements Authenticatable, Arrayable
     public readonly ?int $id;
 
     public static function create(
-        ?int $id,
+        UserRepository $repo,
+        string $account_name,
         string $name,
         string $email,
         string $password,
         ?string $remember_token
     ): static {
         $entity = new UserEntity(
-            id: $id,
+            id: null,
+            account_name: $account_name,
             name: $name,
             email: $email,
             password: $password,
             remember_token: $remember_token,
         );
-        return new static(entity: $entity);
+        return new static(entity: $repo->save($entity));
     }
 
     public function __construct(
@@ -94,11 +96,6 @@ class TubuyakiUser implements Authenticatable, Arrayable
         return $this->entity->getRememberTokenName();
     }
 
-    public function save(UserRepository $repo): void
-    {
-        $repo->save($this->entity);
-    }
-
     public function toArray(): array
     {
         return $this->entity->toArray();
@@ -110,5 +107,10 @@ class TubuyakiUser implements Authenticatable, Arrayable
         unset($array['password']);
         unset($array[$this->entity->getRememberTokenName()]);
         return $array;
+    }
+
+    public function getEntity(): UserEntity
+    {
+        return $this->entity;
     }
 }
