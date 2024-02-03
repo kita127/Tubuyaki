@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Logout;
 
 use Tests\TestCase;
 use App\Services\TubuyakiUser;
