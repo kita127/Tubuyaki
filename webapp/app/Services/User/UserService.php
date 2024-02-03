@@ -25,10 +25,18 @@ class UserService
         if ($this->existsAccountName($accountName)) {
             throw new LogicException('既に登録済みのアカウント名です');
         }
+        if ($this->existsEmail($email)) {
+            throw new LogicException('既に登録済みのメールアドレスです');
+        }
         $entity = $this->repo->save(
             new User(null, $accountName, $name, $email, $password)
         );
         return $entity->id;
+    }
+
+    private function existsEmail(string $email): bool
+    {
+        return $this->repo->findOneBy(['email' => $email]) ? true : false;
     }
 
     private function existsAccountName(string $accountName): bool
