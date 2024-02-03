@@ -27,9 +27,7 @@ class TubuyakiUser implements Authenticatable, Arrayable
             password: $password,
             remember_token: $remember_token,
         );
-        $repo->save($entity);
-        $entity = $repo->findOneBy(['account_name' => $account_name, 'email' => $email]);
-        return new static(entity: $entity);
+        return new static(entity: $repo->save($entity));
     }
 
     public function __construct(

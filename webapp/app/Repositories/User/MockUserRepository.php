@@ -36,12 +36,12 @@ class MockUserRepository implements UserRepository
         return static::$dummyRecords[$id];
     }
 
-    public function save(User $user): int
+    public function save(User $user): User
     {
         if ($user->id && isset(static::$dummyRecords[$user->id])) {
             // update
             static::$dummyRecords[$user->id] = $user;
-            $retId = $user->id;
+            return $user;
         } else {
             // create
             $nextId = $this->getMaxId() + 1;
@@ -54,9 +54,8 @@ class MockUserRepository implements UserRepository
                 remember_token: $user->remember_token,
             );
             static::$dummyRecords[$nextId] = $newUser;
-            $retId = $nextId;
+            return $newUser;
         }
-        return $retId;
     }
 
     /**

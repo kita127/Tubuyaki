@@ -4,6 +4,7 @@ namespace App\Repositories\User;
 
 use App\Entities\User;
 use App\Models\User as ElqUser;
+use RuntimeException;
 
 class ElqUserRepository implements UserRepository
 {
@@ -13,7 +14,7 @@ class ElqUserRepository implements UserRepository
         return $this->createEntity($elqUser);
     }
 
-    public function save(User $user): int
+    public function save(User $user): User
     {
         if (!$user->id) {
             // create
@@ -27,8 +28,10 @@ class ElqUserRepository implements UserRepository
         $elqUser->email = $user->email;
         $elqUser->password = $user->password;
         $elqUser->remember_token = $user->remember_token;
-        $elqUser->save();
-        return $elqUser->id;
+        if (!$elqUser->save()) {
+            throw new RuntimeException();
+        }
+        return $this->createEntity($elqUser);
     }
 
     /**
