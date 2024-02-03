@@ -13,7 +13,7 @@ class ElqUserRepository implements UserRepository
         return $this->createEntity($elqUser);
     }
 
-    public function save(User $user): bool
+    public function save(User $user): int
     {
         if (!$user->id) {
             // create
@@ -27,7 +27,8 @@ class ElqUserRepository implements UserRepository
         $elqUser->email = $user->email;
         $elqUser->password = $user->password;
         $elqUser->remember_token = $user->remember_token;
-        return $elqUser->save();
+        $elqUser->save();
+        return $elqUser->id;
     }
 
     /**

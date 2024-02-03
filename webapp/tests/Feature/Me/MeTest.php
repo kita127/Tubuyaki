@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Me;
 
+use App\Repositories\User\UserRepository;
 use Tests\TestCase;
 use App\Services\TubuyakiUser;
 
@@ -14,7 +15,7 @@ class MeTest extends TestCase
     public function test01_01_ログインしているユーザ情報取得(): void
     {
         $user = TubuyakiUser::create(
-            id: 1,
+            app()->make(UserRepository::class),
             account_name: 'test_user',
             name: '検証太郎',
             email: 'test@example.com',
@@ -23,14 +24,15 @@ class MeTest extends TestCase
         );
 
         $response = $this->actingAs($user)->get('/api/user');
+        $content = $response->json();
         $this->assertSame(
             [
-                'id' => 1,
+                'id' => $content['id'],
                 'account_name' => 'test_user',
                 'name' => '検証太郎',
                 'email' => 'test@example.com',
             ],
-            $response->json(),
+            $content,
             'passwordとremember_tokenは含まない'
         );
     }

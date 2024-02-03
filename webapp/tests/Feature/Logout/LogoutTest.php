@@ -16,18 +16,13 @@ class LogoutTest extends TestCase
     {
         // 準備
         $user = TubuyakiUser::create(
-            id: null,
+            app()->make(UserRepository::class),
             account_name: 'test_user',
             name: '検証太郎',
             email: 'test@example.com',
             password: '1111aaaa',
             remember_token: 'xxxxyyyy',
         );
-        /** @var UserRepository $repo */
-        $repo = app()->make(UserRepository::class);
-        $repo->save($user->getEntity());
-        $entity = $repo->findOneBy(['account_name' => 'test_user']);
-        $user = new TubuyakiUser($entity);
 
         // 実行
         $response = $this->actingAs($user)->post('/logout');

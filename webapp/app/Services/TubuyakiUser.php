@@ -12,7 +12,7 @@ class TubuyakiUser implements Authenticatable, Arrayable
     public readonly ?int $id;
 
     public static function create(
-        ?int $id,
+        UserRepository $repo,
         string $account_name,
         string $name,
         string $email,
@@ -20,13 +20,15 @@ class TubuyakiUser implements Authenticatable, Arrayable
         ?string $remember_token
     ): static {
         $entity = new UserEntity(
-            id: $id,
+            id: null,
             account_name: $account_name,
             name: $name,
             email: $email,
             password: $password,
             remember_token: $remember_token,
         );
+        $repo->save($entity);
+        $entity = $repo->findOneBy(['account_name' => $account_name, 'email' => $email]);
         return new static(entity: $entity);
     }
 

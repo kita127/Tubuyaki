@@ -8,7 +8,10 @@ interface UserRepository
 {
     public function find(int $id): User;
 
-    public function save(User $user): bool;
+    /**
+     * @return ?int saveしたID
+    */
+    public function save(User $user): int;
 
     /**
      * @param array<string, mixed> $where
