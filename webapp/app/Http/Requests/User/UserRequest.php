@@ -24,7 +24,7 @@ class UserRequest extends FormRequest
     public function rules()
     {
         return [
-            'account_name' => ['nullable', 'alpha_num:ascii'],
+            'account_name' => ['nullable', 'alpha_num:ascii', 'max:30'],
             'name' => ['required', 'string', 'max:50'],
             'email' => ['required', 'email'],
             'password' => ['required', 'ascii', 'max:20'],
