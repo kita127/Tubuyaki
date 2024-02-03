@@ -3,7 +3,6 @@
 namespace App\Repositories\User;
 
 use App\Entities\User;
-use LogicException;
 use OutOfBoundsException;
 
 class MockUserRepository implements UserRepository
@@ -62,13 +61,39 @@ class MockUserRepository implements UserRepository
      * @param array<string, mixed> $where
      * @return User | null
      */
-    public function findOneBy(array $where): never
+    public function findOneBy(array $where): ?User
     {
-        throw new LogicException('unimplemented');
+        foreach (static::$dummyRecords as $record) {
+            if ($this->match($record, $where)) {
+                return $record;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param User $user
+     * @param array<string, mixed> $where
+     * @return bool
+     */
+    private function match(User $user, array $where): bool
+    {
+        foreach ($where as $key => $value) {
+            if (!property_exists($user, $key)) {
+                return false;
+            }
+            if ($user->$key !== $value) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private function getMaxId(): int
     {
+        if (count(static::$dummyRecords) <= 0) {
+            return 0;
+        }
         return max(array_keys(static::$dummyRecords));
     }
 }
