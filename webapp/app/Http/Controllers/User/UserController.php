@@ -34,7 +34,8 @@ class UserController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
 
-        $service = new UserService();
+        /** @var UserService $service */
+        $service = app()->make(UserService::class);
         $id = $service->store($accountName, $name, $email, $password);
         return response()->json([
             'id' => $id,

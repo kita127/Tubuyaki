@@ -10,7 +10,7 @@ class User extends Entity
         public string $name,
         public string $email,
         public string $password,
-        public ?string $remember_token,
+        public ?string $remember_token = null,
     ) {
     }
 

@@ -62,7 +62,7 @@ class LoginTest extends TestCase
             'account_name' => 'test_user',
             'name' => '検証次郎',
             'email' => 'test_user@example.com',
-            'password' => Hash::make('testuserpass'),
+            'password' => 'testuserpass',
         ], $params));
         $user->save();
         return $user;
