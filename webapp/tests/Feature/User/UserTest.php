@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\User;
 
+use App\Entities\User;
+use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -59,6 +61,30 @@ class UserTest extends TestCase
         /** @var UserRepository $repo */
         $entity = app()->make(UserRepository::class)->find($id);
         $this->assertMatchesRegularExpression('/^[a-zA-Z0-9]+$/', $entity->account_name);
+    }
+
+    /**
+     * UserController::store
+     */
+    public function test01_03_既に登録済みのアカウント名の場合は登録できない(): void
+    {
+        /** @var UserRepository $repo */
+        $repo = app()->make(UserRepository::class);
+        $repo->save(
+            new User(null, 'existingAcount', '登録済みのひと', 'test@example.com', 'aabb1111'),
+        );
+
+        $response = $this->post('/api/user', [
+            'account_name' => 'existingAcount',
+            'name' => '新規追加のひと',
+            'email' => 'test@example.com',
+            'password' => 'aabbcc123',
+        ]);
+        $response->assertStatus(409);
+        $records = $repo->findAllBy(['account_name' => 'existingAcount']);
+        $this->assertSame(1, $records->count(), '新規追加されていないため一人だけ');
+        $record = $records->first();
+        $this->assertSame('登録済みのひと', $record->name);
     }
 
     private function assertReturnId(array $json): int

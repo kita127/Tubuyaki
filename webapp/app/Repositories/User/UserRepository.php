@@ -3,6 +3,7 @@
 namespace App\Repositories\User;
 
 use App\Entities\User;
+use Illuminate\Support\Collection;
 
 interface UserRepository
 {
@@ -18,4 +19,10 @@ interface UserRepository
      * @return User | null
      */
     public function findOneBy(array $where): ?User;
+
+    /**
+     * @param array<string, mixed> $where
+     * @return Collection<int, User>    key:ID
+     */
+    public function findAllBy(array $where): Collection;
 }

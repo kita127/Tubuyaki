@@ -4,7 +4,9 @@ namespace App\Repositories\User;
 
 use App\Entities\User;
 use App\Models\User as ElqUser;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use RuntimeException;
+use Illuminate\Support\Collection;
 
 class ElqUserRepository implements UserRepository
 {
@@ -40,15 +42,42 @@ class ElqUserRepository implements UserRepository
      */
     public function findOneBy(array $where): ?User
     {
-        $query = (new ElqUser())->newQuery();
-        foreach ($where as $key => $value) {
-            $query->where($key, $value);
-        }
+        $query = $this->createWhereQuery($where);
         $elqUser = $query->first();
         if (!$elqUser) {
             return null;
         }
         return $this->createEntity($elqUser);
+    }
+
+    /**
+     * @param array<string, mixed> $where
+     * @return Collection<int, User>
+     */
+    public function findAllBy(array $where): Collection
+    {
+        $query = $this->createWhereQuery($where);
+        $elqUsers = $query->get();
+        $users = collect([]);
+        foreach ($elqUsers as $eu) {
+            /** @var ElqUser $eu */
+            $users->put($eu->id, $eu);
+        }
+        return $users;
+    }
+
+    /**
+     * @param array<string, mixed> $where
+     * @return Builder
+     */
+    private function createWhereQuery(array $where): Builder
+    {
+        // TODO: これwhereなかった時どんなクエリになるか確認する
+        $query = (new ElqUser())->newQuery();
+        foreach ($where as $key => $value) {
+            $query->where($key, $value);
+        }
+        return $query;
     }
 
     private function createEntity(ElqUser $elqUser): User

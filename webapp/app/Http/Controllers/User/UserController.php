@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\User\UserRequest;
 use App\Services\User\UserService;
+use LogicException;
 
 class UserController extends Controller
 {
@@ -36,9 +37,17 @@ class UserController extends Controller
 
         /** @var UserService $service */
         $service = app()->make(UserService::class);
-        $id = $service->store($accountName, $name, $email, $password);
+        try {
+            $id = $service->store($accountName, $name, $email, $password);
+        } catch (LogicException $e) {
+            return response()->json([
+                'id' => null,
+                'message' => $e->getMessage(),
+            ], ResponseStatus::CONFLICT);
+        }
         return response()->json([
             'id' => $id,
+            'message' => '',
         ], ResponseStatus::CREATED);
     }
 

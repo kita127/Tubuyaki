@@ -12,6 +12,10 @@ class UserService
         private readonly UserRepository $repo,
     ) {
     }
+
+    /**
+     * @throws LogicException
+     */
     public function store(?string $accountName, string $name, string $email, string $password): int
     {
         if (!$accountName) {

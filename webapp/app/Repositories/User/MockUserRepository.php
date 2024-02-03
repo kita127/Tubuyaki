@@ -4,6 +4,7 @@ namespace App\Repositories\User;
 
 use App\Entities\User;
 use OutOfBoundsException;
+use Illuminate\Support\Collection;
 
 class MockUserRepository implements UserRepository
 {
@@ -69,6 +70,21 @@ class MockUserRepository implements UserRepository
             }
         }
         return null;
+    }
+
+    /**
+     * @param array<string, mixed> $where
+     * @return Collection<int, User>
+     */
+    public function findAllBy(array $where): Collection
+    {
+        $users = collect([]);
+        foreach (static::$dummyRecords as $user) {
+            if ($this->match($user, $where)) {
+                $users->put($user->id, $user);
+            }
+        }
+        return $users;
     }
 
     /**
