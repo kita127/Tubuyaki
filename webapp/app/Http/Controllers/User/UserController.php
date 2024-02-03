@@ -8,18 +8,22 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\User\UserRequest;
 use App\Services\User\UserService;
+use App\Services\TubuyakiUser;
 use LogicException;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        //
+        /** @var TubuyakiUser $user */
+        $user = $request->user();
+        return response()->json(
+            $user->toRistrictedArray(),
+            200,
+        );
     }
 
     /**
