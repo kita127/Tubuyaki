@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Login;
 
-use App\Models\User;
+use App\Entities\User;
+use App\Repositories\User\UserRepository;
 use Tests\TestCase;
-use Illuminate\Support\Facades\Hash;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
@@ -17,7 +17,6 @@ class LoginTest extends TestCase
      */
     public function test01_01_メールアドレスとパスが一致したらログイン後にリダイレクト(): void
     {
-        // TODO: Eloquent直接触るのやめる
         // 準備
         $user = $this->createUser();
 
@@ -56,15 +55,16 @@ class LoginTest extends TestCase
     // private
     //////////////////////////////////////
 
-    private function createUser(array $params = []): User
+    private function createUser(): User
     {
-        $user = new User(array_merge([
-            'account_name' => 'test_user',
-            'name' => '検証次郎',
-            'email' => 'test_user@example.com',
-            'password' => 'testuserpass',
-        ], $params));
-        $user->save();
+        $user = new User(
+            id: null,
+            account_name: 'test_user',
+            name: '検証次郎',
+            email: 'test_user@example.com',
+            password: 'testuserpass',
+        );
+        app()->make(UserRepository::class)->save($user);
         return $user;
     }
 }
