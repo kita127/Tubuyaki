@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    // TODO: これもコントローラに入れよう
     $user = $request->user();
     return $user->toRistrictedArray();
 });
+
+Route::post('/user', [UserController::class, 'store']);
