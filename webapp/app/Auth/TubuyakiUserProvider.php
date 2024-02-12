@@ -86,6 +86,10 @@ class TubuyakiUserProvider implements UserProvider
         /** @var UserRepository $repo */
         $repo = app()->make(UserRepository::class);
         $entity = $repo->findOneBy($credentials);
+        if (!$entity) {
+            return null;
+        }
+
         return new TubuyakiUser($entity);
     }
 
