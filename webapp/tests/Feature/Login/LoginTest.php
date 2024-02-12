@@ -35,7 +35,7 @@ class LoginTest extends TestCase
     /**
      * LoginController::authenticate
      */
-    public function test01_02_パスが不一致はルートにリダイレクト(): void
+    public function test01_02_パスが不一致はリダイレクト(): void
     {
         // 準備
         $user = $this->createUser();
@@ -47,7 +47,23 @@ class LoginTest extends TestCase
         ]);
 
         // 検証
-        $this->assertSame(302, $response->getStatusCode(), '認証成功後はリダイレクト');
+        $this->assertSame(302, $response->getStatusCode());
+        $response->assertSessionHasErrors(['email' => 'The provided credentials do not match our records.']);
+    }
+
+    public function test01_03_emailが不一致はリダイレクト(): void
+    {
+        // 準備
+        $user = $this->createUser();
+
+        // 実行
+        $response = $this->post('/login', [
+            'email' => 'test_user@example.hoge',
+            'password' => 'testuserpass',
+        ]);
+
+        // 検証
+        $this->assertSame(302, $response->getStatusCode());
         $response->assertSessionHasErrors(['email' => 'The provided credentials do not match our records.']);
     }
 
