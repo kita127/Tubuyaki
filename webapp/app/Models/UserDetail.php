@@ -36,8 +36,4 @@ class UserDetail extends Model
         return $this->belongsTo(User::class);
     }
 
-    // public function setPasswordAttribute($password)
-    // {
-    //     $this->password = Hash::make($password);
-    // }
 }
