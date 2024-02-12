@@ -7,6 +7,7 @@ use App\Models\UserDetail;
 
 class UserDetailSeeder extends Seeder
 {
+    private bool $createdAdmin = false;
     /**
      * Run the database seeds.
      *
@@ -15,7 +16,17 @@ class UserDetailSeeder extends Seeder
     public function run()
     {
         User::all()->each(function (User $user) {
-            UserDetail::factory()->create(['user_id' => $user->id]);
+            if ($this->createdAdmin) {
+                UserDetail::factory()->create(['user_id' => $user->id]);
+            } else {
+                UserDetail::factory()->create([
+                    'user_id' => $user->id,
+                    'account_name' => 'admin',
+                    'name' => '管理者',
+                    'email' => 'admin@example.net',
+                ]);
+                $this->createdAdmin = true;
+            }
         });
     }
 }
