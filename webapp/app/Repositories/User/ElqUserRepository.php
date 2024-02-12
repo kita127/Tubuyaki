@@ -51,10 +51,7 @@ class ElqUserRepository implements UserRepository
      */
     public function findOneBy(array $where): ?User
     {
-        $query = ElqUser::query()->join('user_details', 'users.id', '=', 'user_details.user_id');
-        foreach ($where as $key => $value) {
-            $query->where($key, $value);
-        }
+        $query = $this->createWhereQuery($where);
         $id = $query->first('users.id');
         if (!$id) {
             return null;
@@ -69,7 +66,6 @@ class ElqUserRepository implements UserRepository
      */
     public function findAllBy(array $where): Collection
     {
-        // TODO: user_detailsに対応させる
         $query = $this->createWhereQuery($where);
         $elqUsers = $query->get();
         $users = collect([]);
@@ -87,7 +83,7 @@ class ElqUserRepository implements UserRepository
     private function createWhereQuery(array $where): Builder
     {
         // TODO: これwhereなかった時どんなクエリになるか確認する
-        $query = (new ElqUser())->newQuery();
+        $query = ElqUser::query()->join('user_details', 'users.id', '=', 'user_details.user_id');
         foreach ($where as $key => $value) {
             $query->where($key, $value);
         }
