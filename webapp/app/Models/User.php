@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\UserDetail;
+use App\Entities\User as EUser;
 
 class User extends Authenticatable
 {
@@ -41,5 +42,17 @@ class User extends Authenticatable
     public function userDetail()
     {
         return $this->hasOne(UserDetail::class);
+    }
+
+    public function toEntity(): EUser
+    {
+        return new EUser(
+            id: $this->id,
+            account_name: $this->userDetail->account_name,
+            name: $this->userDetail->name,
+            email: $this->userDetail->email,
+            password: $this->userDetail->password,
+            remember_token: $this->remember_token,
+        );
     }
 }

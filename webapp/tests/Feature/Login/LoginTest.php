@@ -67,6 +67,12 @@ class LoginTest extends TestCase
         $response->assertSessionHasErrors(['email' => 'The provided credentials do not match our records.']);
     }
 
+    public function test02_01_未ログイン時に認証の必要なAPIにはアクセスできない(): void
+    {
+        $response = $this->get("/api/user");
+        $response->assertStatus(302);
+    }
+
     //////////////////////////////////////
     // private
     //////////////////////////////////////

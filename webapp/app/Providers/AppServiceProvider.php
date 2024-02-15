@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\Follower\ElqFollowerRepository;
+use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\User\ElqUserRepository;
 use App\Repositories\User\UserRepository;
 use Illuminate\Support\ServiceProvider;
@@ -16,6 +18,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public $bindings = [
         UserRepository::class => ElqUserRepository::class,
+        FollowerRepository::class => ElqFollowerRepository::class,
     ];
 
     /**
