@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Follow\FollowController;
 use App\Http\Controllers\User\UserController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,8 +15,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// 認証後のAPI
 Route::middleware('auth:sanctum')->group(function () {
     Route::group(['prefix' => 'users'], function () {
+        Route::get('/me', [UserController::class, 'me']);
         Route::group(['prefix' => '{id}'], function () {
             Route::group(['prefix' => 'following'], function () {
                 Route::get('/', [FollowController::class, 'index']);
@@ -29,6 +30,4 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-// TODO: userて単数形嫌なので修正する
-Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'index']);
-Route::post('/user', [UserController::class, 'store']);
+Route::post('/users', [UserController::class, 'store']);

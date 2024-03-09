@@ -8,17 +8,43 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use App\Repositories\User\UserRepository;
 use Illuminate\Support\Facades\Hash;
+use App\Services\TubuyakiUser;
 
 class UserControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    public function test01_01_ログインしているユーザ情報取得(): void
+    {
+        $user = TubuyakiUser::create(
+            app()->make(UserRepository::class),
+            account_name: 'test_user',
+            name: '検証太郎',
+            email: 'test@example.com',
+            password: '1111aaaa',
+            remember_token: 'xxxxyyyy',
+        );
+
+        $response = $this->actingAs($user)->get('/api/users/me');
+        $content = $response->json();
+        $this->assertSame(
+            [
+                'id' => $content['id'],
+                'account_name' => 'test_user',
+                'name' => '検証太郎',
+                'email' => 'test@example.com',
+            ],
+            $content,
+            'passwordとremember_tokenは含まない'
+        );
+    }
+
     /**
      * UserController::store
      */
-    public function test01_01_ユーザー登録(): void
+    public function test02_01_ユーザー登録(): void
     {
-        $response = $this->post('/api/user', [
+        $response = $this->post('/api/users', [
             'account_name' => 'newUser',
             'name' => '新規追加',
             'email' => 'test@example.com',
@@ -46,9 +72,9 @@ class UserControllerTest extends TestCase
     /**
      * UserController::store
      */
-    public function test01_02_ユーザ登録でアカウント名未指定は英数字のランダムな値を設定(): void
+    public function test02_02_ユーザ登録でアカウント名未指定は英数字のランダムな値を設定(): void
     {
-        $response = $this->post('/api/user', [
+        $response = $this->post('/api/users', [
             //            'account_name' => 'newUser',
             'name' => '新規追加',
             'email' => 'test@example.com',
@@ -65,7 +91,7 @@ class UserControllerTest extends TestCase
     /**
      * UserController::store
      */
-    public function test01_03_既に登録済みのアカウント名の場合は登録できない(): void
+    public function test02_03_既に登録済みのアカウント名の場合は登録できない(): void
     {
         /** @var UserRepository $repo */
         $repo = app()->make(UserRepository::class);
@@ -73,7 +99,7 @@ class UserControllerTest extends TestCase
             new User(null, 'existingAcount', '登録済みのひと', 'test@example.com', 'aabb1111'),
         );
 
-        $response = $this->post('/api/user', [
+        $response = $this->post('/api/users', [
             'account_name' => 'existingAcount',
             'name' => '新規追加のひと',
             'email' => 'test@example.com',
