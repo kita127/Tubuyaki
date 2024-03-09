@@ -22,6 +22,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::group(['prefix' => 'following'], function () {
                 Route::get('/', [FollowController::class, 'index']);
             });
+            Route::group(['prefix' => 'followers'], function () {
+                Route::get('/', [FollowController::class, 'getFollowers']);
+            });
         })->whereNumber('id');
     });
 });

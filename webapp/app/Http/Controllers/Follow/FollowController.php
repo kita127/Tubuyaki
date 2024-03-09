@@ -18,13 +18,27 @@ class FollowController extends Controller
      */
     public function index(int $id): JsonResponse
     {
-        $r1 = app()->make(FollowerRepository::class);
-        $r2 = app()->make(UserRepository::class);
-        $service = new FollowerService($r1, $r2);
+        $followerRepo = app()->make(FollowerRepository::class);
+        $userRepo = app()->make(UserRepository::class);
+        $service = new FollowerService($followerRepo, $userRepo);
         $followees = $service->getFollowees($id);
         return response()->json(
             [
                 'followees' => $followees->values(),
+            ],
+            200,
+        );
+    }
+
+    public function getFollowers(int $id): JsonResponse
+    {
+        $followerRepo = app()->make(FollowerRepository::class);
+        $userRepo = app()->make(UserRepository::class);
+        $service = new FollowerService($followerRepo, $userRepo);
+        $followers = $service->getFollowers($id);
+        return response()->json(
+            [
+                'followers' => $followers->values(),
             ],
             200,
         );

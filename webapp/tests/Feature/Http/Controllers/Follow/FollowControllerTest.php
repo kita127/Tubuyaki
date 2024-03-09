@@ -25,7 +25,10 @@ class FollowControllerTest extends TestCase
         $this->followerRepo = app()->make(FollowerRepository::class);
     }
 
-    public function test01_01_フォローしているユーザーの一覧を取得する()
+    /**
+     * FollowController::index
+     */
+    public function test01_01_フォローしているユーザーの一覧を取得する(): void
     {
         // 準備
         [$hoge, $fuga] = $this->createUsers();
@@ -45,6 +48,33 @@ class FollowControllerTest extends TestCase
                         'id' => $content['followees'][0]['id'],
                         'account_name' => 'fuga',
                         'name' => 'ふが次郎',
+                    ],
+                ],
+            ],
+            $content
+        );
+    }
+
+    public function test02_01_フォローされているユーザーの一覧を取得する(): void
+    {
+        // 準備
+        [$hoge, $fuga] = $this->createUsers();
+        $this->createFollowingRelation($hoge, $fuga);
+        $loginUser = new TubuyakiUser($fuga);
+
+        // 実行
+        $response = $this->actingAs($loginUser)->get("/api/users/{$fuga->id}/followers");
+
+        // 検証
+        $response->assertStatus(200);
+        $content = $response->json();
+        $this->assertSame(
+            [
+                'followers' => [
+                    [
+                        'id' => $content['followers'][0]['id'],
+                        'account_name' => 'hoge',
+                        'name' => 'ほげ太郎',
                     ],
                 ],
             ],

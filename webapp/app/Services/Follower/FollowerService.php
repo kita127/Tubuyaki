@@ -28,4 +28,17 @@ class FollowerService
             'name' => $user->name,
         ]);
     }
+
+    public function getFollowers(int $id): Collection
+    {
+        $followRelations = $this->followerRepository->findAllBy(['followee_id' => $id]);
+        $followerIdLs = $followRelations->map(fn(Follower $follower) => $follower->user_id);
+        $followers = $this->userRepository->findIn(['id' => $followerIdLs->all()]);
+        return $followers->map(fn(User $user) => [
+            // TODO: ここはクラス化を検討する？
+            'id' => $user->id,
+            'account_name' => $user->account_name,
+            'name' => $user->name,
+        ]);
+    }
 }
