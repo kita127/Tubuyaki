@@ -1,16 +1,15 @@
 <?php
 
-namespace Tests\Feature\User;
+namespace Tests\Feature\Http\Controllers\User;
 
 use App\Entities\User;
-use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use App\Repositories\User\UserRepository;
 use Illuminate\Support\Facades\Hash;
 
-class UserTest extends TestCase
+class UserControllerTest extends TestCase
 {
     use DatabaseTransactions;
 

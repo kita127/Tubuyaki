@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Logout;
+namespace Tests\Feature\Http\Controllers;
 
 use Tests\TestCase;
 use App\Services\TubuyakiUser;
@@ -8,7 +8,7 @@ use App\Repositories\User\UserRepository;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
-class LogoutTest extends TestCase
+class LogoutControllerTest extends TestCase
 {
     use DatabaseTransactions;
 

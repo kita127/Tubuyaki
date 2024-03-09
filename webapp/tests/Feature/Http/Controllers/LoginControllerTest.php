@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Login;
+namespace Tests\Feature\Http\Controllers;
 
 use App\Entities\User;
 use App\Repositories\User\UserRepository;
@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
-class LoginTest extends TestCase
+class LoginControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
