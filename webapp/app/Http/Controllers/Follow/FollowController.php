@@ -8,6 +8,8 @@ use App\Repositories\User\UserRepository;
 use App\Services\Follower\FollowerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 class FollowController extends Controller
 {
@@ -42,6 +44,20 @@ class FollowController extends Controller
             ],
             200,
         );
+    }
+
+    public function follow(Request $request, int $id): Response
+    {
+        /** @var FollowerService $service */
+        $service = app()->make(FollowerService::class);
+        /** @var UserRepository $userRepo */
+        $userRepo = app()->make(UserRepository::class);
+        $target = $userRepo->find($id);
+        /** @var Authenticatable $user */
+        $user = $request->user();
+        $service->follow($user, $target);
+        // TODO: レスポンスコードも定数化する
+        return response('', 201);
     }
 
     /**
