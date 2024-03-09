@@ -16,7 +16,7 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): JsonResponse
+    public function me(Request $request): JsonResponse
     {
         /** @var TubuyakiUser $user */
         $user = $request->user();
