@@ -82,6 +82,34 @@ class FollowControllerTest extends TestCase
         );
     }
 
+    public function test03_01_ユーザーをフォローする(): void
+    {
+        // 準備
+        /** @var User $hoge */
+        /** @var User $fuga */
+        [$hoge, $fuga] = $this->createUsers();
+        $loginUser = new TubuyakiUser($hoge);
+
+        // 実行
+        $response = $this->actingAs($loginUser)->post("/api/users/{$fuga->id}/following", []);
+
+        // 検証
+        $response->assertStatus(201);
+
+        $followers = $this->followerRepo->findAllBy([]);
+        $id = $followers->first()->id;
+        $this->assertSame(
+            [
+                $id => [
+                    'id' => $id,
+                    'user_id' => $hoge->id,
+                    'followee_id' => $fuga->id,
+                ],
+            ],
+            $followers->toArray(),
+        );
+    }
+
     /**
      * @return Collection<User>
      */

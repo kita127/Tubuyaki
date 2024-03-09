@@ -6,8 +6,10 @@ use App\Entities\Follower;
 use App\Entities\User;
 use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\User\UserRepository;
+use App\Services\TubuyakiUser;
 use Illuminate\Support\Collection;
 
+// TODO: FollowServiceにクラス名変更する
 class FollowerService
 {
     public function __construct(
@@ -40,5 +42,11 @@ class FollowerService
             'account_name' => $user->account_name,
             'name' => $user->name,
         ]);
+    }
+
+    public function follow(TubuyakiUser $me, User $target): void
+    {
+        $followRelation = new Follower(null, $me->id, $target->id);
+        $this->followerRepository->save($followRelation);
     }
 }

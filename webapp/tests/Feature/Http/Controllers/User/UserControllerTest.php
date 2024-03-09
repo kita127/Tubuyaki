@@ -51,6 +51,7 @@ class UserControllerTest extends TestCase
             'password' => 'aabbcc123',
         ]);
         $response->assertStatus(201);
+        // TODO: Locationヘッダに生成したユーザのリソースを設定して返したい
         $id = $this->assertReturnId($response->json());
 
         /** @var UserRepository $repo */
