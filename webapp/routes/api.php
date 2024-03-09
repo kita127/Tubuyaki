@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Follow\FollowController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -15,5 +16,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::group(['prefix' => 'users'], function () {
+        Route::group(['prefix' => '{id}'], function () {
+            Route::group(['prefix' => 'following'], function () {
+                Route::get('/', [FollowController::class, 'index']);
+            });
+            Route::group(['prefix' => 'followers'], function () {
+                Route::get('/', [FollowController::class, 'getFollowers']);
+            });
+        })->whereNumber('id');
+    });
+});
+
+// TODO: userて単数形嫌なので修正する
 Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'index']);
 Route::post('/user', [UserController::class, 'store']);

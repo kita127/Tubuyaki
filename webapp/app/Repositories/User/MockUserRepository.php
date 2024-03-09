@@ -3,6 +3,7 @@
 namespace App\Repositories\User;
 
 use App\Entities\User;
+use Nette\NotImplementedException;
 use OutOfBoundsException;
 use Illuminate\Support\Collection;
 
@@ -85,6 +86,15 @@ class MockUserRepository implements UserRepository
             }
         }
         return $users;
+    }
+
+    /**
+     * @param array<string, array> $whereIn
+     * @return Collection<int, User>    key:ID
+     */
+    public function findIn(array $whereIn): never
+    {
+        throw new NotImplementedException();
     }
 
     /**

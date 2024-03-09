@@ -25,4 +25,10 @@ interface UserRepository
      * @return Collection<int, User>    key:ID
      */
     public function findAllBy(array $where): Collection;
+
+    /**
+     * @param array<string, array> $whereIn
+     * @return Collection<int, User>    key:ID
+     */
+    public function findIn(array $whereIn): Collection;
 }

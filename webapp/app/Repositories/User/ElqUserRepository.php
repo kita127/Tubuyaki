@@ -8,6 +8,7 @@ use App\Models\UserDetail as ElqUserDetail;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Collection;
+use LogicException;
 
 class ElqUserRepository implements UserRepository
 {
@@ -73,7 +74,35 @@ class ElqUserRepository implements UserRepository
             /** @var ElqUser $eu */
             $users->put($eu->id, $eu);
         }
+        // TODO: 返却しているのがEloquentのUser型になっている
         return $users;
+    }
+
+    /**
+     * @param array<string, array> $whereIn
+     * @return Collection<int, User>    key:ID
+     */
+    public function findIn(array $whereIn): Collection
+    {
+        $keys = array_keys($whereIn);
+        if (count($keys) !== 1) {
+            throw new LogicException();
+        }
+        $values = array_values($whereIn);
+        if (count($values) !== 1) {
+            throw new LogicException();
+        }
+        if (!is_array($values[0])) {
+            throw new LogicException();
+        }
+        $query = ElqUser::query()->whereIn($keys[0], $values[0]);
+        $users = $query->get();
+        $result = collect([]);
+        foreach ($users as $user) {
+            /** @var ElqUser $user */
+            $result->put($user->id, $user->toEntity());
+        }
+        return $result;
     }
 
     /**
