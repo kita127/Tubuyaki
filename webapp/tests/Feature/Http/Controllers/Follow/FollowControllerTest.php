@@ -28,12 +28,12 @@ class FollowControllerTest extends TestCase
     public function test01_01_フォローしているユーザーの一覧を取得する()
     {
         // 準備
-        $users = $this->createUsers();
-        $this->createFollowingRelation($users[0], $users[1]);
-        $loginUser = new TubuyakiUser($users[0]);
+        [$hoge, $fuga] = $this->createUsers();
+        $this->createFollowingRelation($hoge, $fuga);
+        $loginUser = new TubuyakiUser($hoge);
 
         // 実行
-        $response = $this->actingAs($loginUser)->get("/api/users/{$users[0]->id}/following");
+        $response = $this->actingAs($loginUser)->get("/api/users/{$hoge->id}/following");
 
         // 検証
         $response->assertStatus(200);
