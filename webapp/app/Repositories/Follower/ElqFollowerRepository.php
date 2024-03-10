@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use App\Entities\Follower;
 use App\Models\Follower as ElqFollower;
-use App\Entities\Identifiable\Identified;
 
 class ElqFollowerRepository implements FollowerRepository
 {
@@ -33,6 +32,24 @@ class ElqFollowerRepository implements FollowerRepository
         $query = $this->createWhereQuery($where);
         $followers = $query->get();
         return $followers->map(fn(ElqFollower $f) => $f->toEntity())->keyBy('id');
+    }
+
+    /**
+     * @param array<string, mixed> $where
+     * @return Follower
+     */
+    public function findOneBy(array $where): ?Follower
+    {
+        $query = $this->createWhereQuery($where);
+        /** @var ElqFollower $follower */
+        $follower = $query->first();
+        return $follower?->toEntity();
+    }
+
+    public function delete(Follower $follwer): void
+    {
+        $model = ElqFollower::findOrFail($follwer->id->value());
+        $model->delete();
     }
 
     /**

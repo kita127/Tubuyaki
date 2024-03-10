@@ -13,6 +13,12 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 class FollowController extends Controller
 {
+    public function __construct(
+        private readonly FollowerRepository $followerRepo,
+        private readonly UserRepository $userRepo,
+        private readonly FollowService $service,
+    ) {
+    }
     /**
      * Display a listing of the resource.
      *
@@ -58,6 +64,16 @@ class FollowController extends Controller
         $service->follow($user, $target);
         // TODO: レスポンスコードも定数化する
         return response('', 201);
+    }
+
+    public function unfollow(Request $request, int $id): Response
+    {
+        $target = $this->userRepo->find($id);
+        /** @var Authenticatable $user */
+        $user = $request->user();
+        $this->service->unfollow($user, $target);
+        // TODO: レスポンスコードも定数化する
+        return response('', 204);
     }
 
     /**

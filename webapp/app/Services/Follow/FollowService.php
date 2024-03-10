@@ -10,7 +10,6 @@ use App\Repositories\User\UserRepository;
 use App\Services\TubuyakiUser;
 use Illuminate\Support\Collection;
 
-// TODO: FollowServiceにクラス名変更する
 class FollowService
 {
     public function __construct(
@@ -49,5 +48,16 @@ class FollowService
     {
         $followRelation = new Follower(new Unidentified(), $me->id->value(), $target->id->value());
         $this->followerRepository->save($followRelation);
+    }
+
+    public function unfollow(TubuyakiUser $me, User $target): void
+    {
+        $relation = $this->followerRepository->findOneBy([
+            'user_id' => $me->id->value(),
+            'followee_id' => $target->id->value()
+        ]);
+        if ($relation) {
+            $this->followerRepository->delete($relation);
+        }
     }
 }

@@ -112,6 +112,28 @@ class FollowControllerTest extends TestCase
     }
 
     /**
+     * FollowController::unfollow
+     */
+    public function test04_01_フォローしているユーザーのフォローを解除する(): void
+    {
+        // 準備
+        /** @var User $hoge */
+        /** @var User $fuga */
+        [$hoge, $fuga] = $this->createUsers();
+        $this->createFollowingRelation($hoge, $fuga);
+        $loginUser = new TubuyakiUser($hoge);
+
+        // 実行
+        $response = $this->actingAs($loginUser)->delete("/api/users/{$fuga->id->value()}/following", []);
+
+        // 検証
+        $response->assertStatus(204);   // No Content
+
+        $followers = $this->followerRepo->findAllBy([]);
+        $this->assertCount(0, $followers);
+    }
+
+    /**
      * @return Collection<User>
      */
     private function createUsers(): Collection

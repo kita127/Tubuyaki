@@ -19,4 +19,12 @@ interface FollowerRepository
      */
     public function findAllBy(array $where): Collection;
 
+    /**
+     * @param array<string, mixed> $where
+     * @return Follower
+     */
+    public function findOneBy(array $where): ?Follower;
+
+    public function delete(Follower $follwer);
+
 }
