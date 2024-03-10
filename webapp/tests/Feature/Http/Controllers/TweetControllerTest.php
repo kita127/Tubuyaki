@@ -1,14 +1,15 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Http\Controllers;
 
-use App\Repositories\User\UserRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Entities\Identifiable\Unidentified;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Lib\UserAssistance;
 use App\Services\TubuyakiUser;
+use App\Entities\Tweet;
+use App\Repositories\Tweet\TweetRepository;
 
 class TweetControllerTest extends TestCase
 {
@@ -33,7 +34,7 @@ class TweetControllerTest extends TestCase
         /** @var UserAssistance $userAssistance */
         $userAssistance = app()->make(UserAssistance::class);
         $user = $userAssistance->createUser();
-        $tweet = new Tweet(['user_id' => $user->id->value(), 'text' => 'つぶやきの内容']);
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), 'つぶやきの内容');
         $this->tweetRepository->save($tweet);
         $loginUser = new TubuyakiUser($user);
 
