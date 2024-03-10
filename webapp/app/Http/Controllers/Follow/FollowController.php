@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Follow;
 use App\Http\Controllers\Controller;
 use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\User\UserRepository;
-use App\Services\Follower\FollowerService;
+use App\Services\Follow\FollowService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -22,7 +22,7 @@ class FollowController extends Controller
     {
         $followerRepo = app()->make(FollowerRepository::class);
         $userRepo = app()->make(UserRepository::class);
-        $service = new FollowerService($followerRepo, $userRepo);
+        $service = new FollowService($followerRepo, $userRepo);
         $followees = $service->getFollowees($id);
         return response()->json(
             [
@@ -36,7 +36,7 @@ class FollowController extends Controller
     {
         $followerRepo = app()->make(FollowerRepository::class);
         $userRepo = app()->make(UserRepository::class);
-        $service = new FollowerService($followerRepo, $userRepo);
+        $service = new FollowService($followerRepo, $userRepo);
         $followers = $service->getFollowers($id);
         return response()->json(
             [
@@ -48,8 +48,8 @@ class FollowController extends Controller
 
     public function follow(Request $request, int $id): Response
     {
-        /** @var FollowerService $service */
-        $service = app()->make(FollowerService::class);
+        /** @var FollowService $service */
+        $service = app()->make(FollowService::class);
         /** @var UserRepository $userRepo */
         $userRepo = app()->make(UserRepository::class);
         $target = $userRepo->find($id);

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Follower;
+namespace App\Services\Follow;
 
 use App\Entities\Follower;
 use App\Entities\Identifiable\Unidentified;
@@ -11,7 +11,7 @@ use App\Services\TubuyakiUser;
 use Illuminate\Support\Collection;
 
 // TODO: FollowServiceにクラス名変更する
-class FollowerService
+class FollowService
 {
     public function __construct(
         private readonly FollowerRepository $followerRepository,
