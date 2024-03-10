@@ -35,7 +35,7 @@ class TweetControllerTest extends TestCase
         $userAssistance = app()->make(UserAssistance::class);
         $user = $userAssistance->createUser();
         $tweet = new Tweet(new Unidentified(), $user->id->value(), 'つぶやきの内容');
-        $this->tweetRepository->save($tweet);
+        $tweet = $this->tweetRepository->save($tweet);
         $loginUser = new TubuyakiUser($user);
 
         // 実行
@@ -47,9 +47,11 @@ class TweetControllerTest extends TestCase
         $this->assertSame(
             [
                 'tweets' => [
-                    'text' => 'つぶやきの内容',
-                    'created_at' => '',
-                    'updated_at' => '',
+                    [
+                        'text' => 'つぶやきの内容',
+                        'created_at' => $tweet->created_at,
+                        'updated_at' => $tweet->updated_at,
+                    ],
                 ],
             ],
             $content

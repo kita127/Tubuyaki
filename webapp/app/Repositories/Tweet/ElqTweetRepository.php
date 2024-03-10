@@ -2,12 +2,22 @@
 
 namespace App\Repositories\Tweet;
 
+use App\Repositories\Traits\Eloquent\ElqCommonFeature;
 use App\Repositories\Tweet\TweetRepository;
 use App\Entities\Tweet;
 use App\Models\Tweet as ElqTweet;
+use Illuminate\Database\Eloquent\Model;
 
 class ElqTweetRepository implements TweetRepository
 {
+    use ElqCommonFeature;
+
+    private readonly Model $model;
+
+    public function __construct()
+    {
+        $this->model = new ElqTweet();
+    }
 
     /**
      * @param Tweet $tweet
