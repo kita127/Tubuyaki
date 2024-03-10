@@ -21,7 +21,7 @@ class ElqFollowerRepository implements FollowerRepository
         } else {
             $elqFollower = $this->create($follower);
         }
-        return $this->createEntity($elqFollower);
+        return $elqFollower->toEntity();
     }
 
     /**
@@ -64,15 +64,5 @@ class ElqFollowerRepository implements FollowerRepository
         $ef->user_id = $follower->user_id;
         $ef->followee_id = $follower->followee_id;
         return $ef;
-    }
-
-    private function createEntity(ElqFollower $elqFollower): Follower
-    {
-        // TODO: モデルからエンティティを生成するように変更する
-        return new Follower(
-            new Identified($elqFollower->id),
-            $elqFollower->user_id,
-            $elqFollower->followee_id,
-        );
     }
 }

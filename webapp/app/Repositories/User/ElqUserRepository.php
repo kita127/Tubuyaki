@@ -16,7 +16,7 @@ class ElqUserRepository implements UserRepository
     public function find(int $id): User
     {
         $elqUser = ElqUser::findOrFail($id);
-        return $this->createEntity($elqUser);
+        return $elqUser->toEntity();
     }
 
     public function save(User $user): User
@@ -44,7 +44,7 @@ class ElqUserRepository implements UserRepository
             $elqUser->userDetail->password = Hash::make($user->password);
             $elqUser->remember_token = $user->remember_token;
         }
-        return $this->createEntity($elqUser);
+        return $elqUser->toEntity();
     }
 
     /**
@@ -59,7 +59,7 @@ class ElqUserRepository implements UserRepository
             return null;
         }
         $elqUser = ElqUser::findOrFail($id)->first();
-        return $this->createEntity($elqUser);
+        return $elqUser->toEntity();
     }
 
     /**
@@ -118,18 +118,5 @@ class ElqUserRepository implements UserRepository
             $query->where($key, $value);
         }
         return $query;
-    }
-
-    // TODO: Eloquentから直接Entiry生成するほうがよいと思う
-    private function createEntity(ElqUser $elqUser): User
-    {
-        return new User(
-            id: new Identified($elqUser->id),
-            account_name: $elqUser->userDetail->account_name,
-            name: $elqUser->userDetail->name,
-            email: $elqUser->userDetail->email,
-            password: $elqUser->userDetail->password,
-            remember_token: $elqUser->remember_token,
-        );
     }
 }
