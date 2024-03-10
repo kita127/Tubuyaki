@@ -26,10 +26,7 @@ class FollowController extends Controller
      */
     public function index(int $id): JsonResponse
     {
-        $followerRepo = app()->make(FollowerRepository::class);
-        $userRepo = app()->make(UserRepository::class);
-        $service = new FollowService($followerRepo, $userRepo);
-        $followees = $service->getFollowees($id);
+        $followees = $this->service->getFollowees($id);
         return response()->json(
             [
                 'followees' => $followees->values(),
@@ -40,10 +37,7 @@ class FollowController extends Controller
 
     public function getFollowers(int $id): JsonResponse
     {
-        $followerRepo = app()->make(FollowerRepository::class);
-        $userRepo = app()->make(UserRepository::class);
-        $service = new FollowService($followerRepo, $userRepo);
-        $followers = $service->getFollowers($id);
+        $followers = $this->service->getFollowers($id);
         return response()->json(
             [
                 'followers' => $followers->values(),
@@ -54,14 +48,10 @@ class FollowController extends Controller
 
     public function follow(Request $request, int $id): Response
     {
-        /** @var FollowService $service */
-        $service = app()->make(FollowService::class);
-        /** @var UserRepository $userRepo */
-        $userRepo = app()->make(UserRepository::class);
-        $target = $userRepo->find($id);
+        $target = $this->userRepo->find($id);
         /** @var Authenticatable $user */
         $user = $request->user();
-        $service->follow($user, $target);
+        $this->service->follow($user, $target);
         // TODO: レスポンスコードも定数化する
         return response('', 201);
     }
