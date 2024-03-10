@@ -2,6 +2,7 @@
 
 namespace App\Services\User;
 
+use App\Entities\Identifiable\Unidentified;
 use App\Entities\User;
 use App\Repositories\User\UserRepository;
 use LogicException;
@@ -29,9 +30,9 @@ class UserService
             throw new LogicException('既に登録済みのメールアドレスです');
         }
         $entity = $this->repo->save(
-            new User(null, $accountName, $name, $email, $password)
+            new User(new Unidentified(), $accountName, $name, $email, $password)
         );
-        return $entity->id;
+        return $entity->id->value();
     }
 
     private function existsEmail(string $email): bool

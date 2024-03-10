@@ -2,10 +2,12 @@
 
 namespace App\Entities;
 
+use App\Entities\Identifiable\Id;
+
 class User extends Entity
 {
     public function __construct(
-        public readonly ?int $id,
+        public readonly Id $id,
         public string $account_name,
         public string $name,
         public string $email,

@@ -3,11 +3,19 @@
 namespace App\Entities;
 
 use Illuminate\Contracts\Support\Arrayable;
+use App\Entities\Identifiable\Id;
 
 abstract class Entity implements Arrayable
 {
+    public function __construct(
+        public readonly Id $id,
+    ) {
+    }
+
     public function toArray(): array
     {
-        return (array) $this;
+        $array = (array) $this;
+        $array['id'] = $this->id->value();
+        return $array;
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\UserDetail;
 use App\Entities\User as EUser;
+use App\Entities\Identifiable\Identified;
 
 class User extends Authenticatable
 {
@@ -47,7 +48,7 @@ class User extends Authenticatable
     public function toEntity(): EUser
     {
         return new EUser(
-            id: $this->id,
+            id: new Identified($this->id),
             account_name: $this->userDetail->account_name,
             name: $this->userDetail->name,
             email: $this->userDetail->email,

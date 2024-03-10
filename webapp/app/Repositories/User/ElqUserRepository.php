@@ -9,6 +9,7 @@ use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Collection;
 use LogicException;
+use App\Entities\Identifiable\Identified;
 
 class ElqUserRepository implements UserRepository
 {
@@ -20,7 +21,7 @@ class ElqUserRepository implements UserRepository
 
     public function save(User $user): User
     {
-        if (!$user->id) {
+        if (!$user->id->isIdentified()) {
             // create
             $elqUser = new ElqUser();
             $elqUser->remember_token = $user->remember_token;
@@ -35,7 +36,7 @@ class ElqUserRepository implements UserRepository
             $elqUser->userDetail()->save($elqUserDetail);
         } else {
             // update
-            $elqUser = ElqUser::findOrFail($user->id);
+            $elqUser = ElqUser::findOrFail($user->id->value());
             /** @var ElqUser $elqUser */
             $elqUser->userDetail->account_name = $user->account_name;
             $elqUser->userDetail->name = $user->name;
@@ -119,10 +120,11 @@ class ElqUserRepository implements UserRepository
         return $query;
     }
 
+    // TODO: Eloquentから直接Entiry生成するほうがよいと思う
     private function createEntity(ElqUser $elqUser): User
     {
         return new User(
-            id: $elqUser->id,
+            id: new Identified($elqUser->id),
             account_name: $elqUser->userDetail->account_name,
             name: $elqUser->userDetail->name,
             email: $elqUser->userDetail->email,

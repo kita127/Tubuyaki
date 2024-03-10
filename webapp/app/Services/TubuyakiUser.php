@@ -2,14 +2,16 @@
 
 namespace App\Services;
 
+use App\Entities\Identifiable\Unidentified;
 use App\Repositories\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use App\Entities\User as UserEntity;
 use Illuminate\Contracts\Support\Arrayable;
+use App\Entities\Identifiable\Id;
 
 class TubuyakiUser implements Authenticatable, Arrayable
 {
-    public readonly ?int $id;
+    public readonly Id $id;
 
     public static function create(
         UserRepository $repo,
@@ -20,7 +22,7 @@ class TubuyakiUser implements Authenticatable, Arrayable
         ?string $remember_token
     ): static {
         $entity = new UserEntity(
-            id: null,
+            id: new Unidentified(),
             account_name: $account_name,
             name: $name,
             email: $email,
@@ -52,7 +54,7 @@ class TubuyakiUser implements Authenticatable, Arrayable
      */
     public function getAuthIdentifier(): string
     {
-        return $this->entity->id;
+        return (string)$this->entity->id->value();
     }
 
     /**

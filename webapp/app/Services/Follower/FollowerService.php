@@ -3,6 +3,7 @@
 namespace App\Services\Follower;
 
 use App\Entities\Follower;
+use App\Entities\Identifiable\Unidentified;
 use App\Entities\User;
 use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\User\UserRepository;
@@ -25,7 +26,7 @@ class FollowerService
         $followees = $this->userRepository->findIn(['id' => $followeeIdLs->all()]);
         return $followees->map(fn(User $user) => [
             // TODO: ここはクラス化を検討する？
-            'id' => $user->id,
+            'id' => $user->id->value(),
             'account_name' => $user->account_name,
             'name' => $user->name,
         ]);
@@ -38,7 +39,7 @@ class FollowerService
         $followers = $this->userRepository->findIn(['id' => $followerIdLs->all()]);
         return $followers->map(fn(User $user) => [
             // TODO: ここはクラス化を検討する？
-            'id' => $user->id,
+            'id' => $user->id->value(),
             'account_name' => $user->account_name,
             'name' => $user->name,
         ]);
@@ -46,7 +47,7 @@ class FollowerService
 
     public function follow(TubuyakiUser $me, User $target): void
     {
-        $followRelation = new Follower(null, $me->id, $target->id);
+        $followRelation = new Follower(new Unidentified(), $me->id->value(), $target->id->value());
         $this->followerRepository->save($followRelation);
     }
 }

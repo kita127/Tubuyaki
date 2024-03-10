@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers\Follow;
 
+use App\Entities\Identifiable\Unidentified;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use App\Services\TubuyakiUser;
 use App\Repositories\User\UserRepository;
@@ -36,7 +37,7 @@ class FollowControllerTest extends TestCase
         $loginUser = new TubuyakiUser($hoge);
 
         // 実行
-        $response = $this->actingAs($loginUser)->get("/api/users/{$hoge->id}/following");
+        $response = $this->actingAs($loginUser)->get("/api/users/{$hoge->id->value()}/following");
 
         // 検証
         $response->assertStatus(200);
@@ -63,7 +64,7 @@ class FollowControllerTest extends TestCase
         $loginUser = new TubuyakiUser($fuga);
 
         // 実行
-        $response = $this->actingAs($loginUser)->get("/api/users/{$fuga->id}/followers");
+        $response = $this->actingAs($loginUser)->get("/api/users/{$fuga->id->value()}/followers");
 
         // 検証
         $response->assertStatus(200);
@@ -91,7 +92,7 @@ class FollowControllerTest extends TestCase
         $loginUser = new TubuyakiUser($hoge);
 
         // 実行
-        $response = $this->actingAs($loginUser)->post("/api/users/{$fuga->id}/following", []);
+        $response = $this->actingAs($loginUser)->post("/api/users/{$fuga->id->value()}/following", []);
 
         // 検証
         $response->assertStatus(201);
@@ -100,10 +101,10 @@ class FollowControllerTest extends TestCase
         $id = $followers->first()->id;
         $this->assertSame(
             [
-                $id => [
-                    'id' => $id,
-                    'user_id' => $hoge->id,
-                    'followee_id' => $fuga->id,
+                $id->value() => [
+                    'id' => $id->value(),
+                    'user_id' => $hoge->id->value(),
+                    'followee_id' => $fuga->id->value(),
                 ],
             ],
             $followers->toArray(),
@@ -115,8 +116,8 @@ class FollowControllerTest extends TestCase
      */
     private function createUsers(): Collection
     {
-        $u1 = new User(null, 'hoge', 'ほげ太郎', 'hoge@example.net', 'hogehoge');
-        $u2 = new User(null, 'fuga', 'ふが次郎', 'fuga@example.net', 'fugafuga');
+        $u1 = new User(new Unidentified(), 'hoge', 'ほげ太郎', 'hoge@example.net', 'hogehoge');
+        $u2 = new User(new Unidentified(), 'fuga', 'ふが次郎', 'fuga@example.net', 'fugafuga');
         $u1 = $this->userRepo->save($u1);
         $u2 = $this->userRepo->save($u2);
         return collect([$u1, $u2]);
@@ -124,7 +125,7 @@ class FollowControllerTest extends TestCase
 
     private function createFollowingRelation(User $follower, User $followee): void
     {
-        $f = new Follower(null, $follower->id, $followee->id);
+        $f = new Follower(new Unidentified(), $follower->id->value(), $followee->id->value());
         $this->followerRepo->save($f);
     }
 }

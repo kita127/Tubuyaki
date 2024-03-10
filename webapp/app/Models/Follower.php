@@ -6,6 +6,7 @@ use App\Entities\Entity;
 use App\Entities\Follower as EF;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Entities\Identifiable\Identified;
 
 class Follower extends Model
 {
@@ -19,7 +20,7 @@ class Follower extends Model
     public function toEntity(): Entity
     {
         return new EF(
-            id: $this->id,
+            id: new Identified($this->id),
             user_id: $this->user_id,
             followee_id: $this->followee_id,
         );

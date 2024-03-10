@@ -8,6 +8,7 @@ use App\Repositories\User\UserRepository;
 use App\Services\User\UserService;
 use LogicException;
 use Tests\TestCase;
+use App\Entities\Identifiable\Identified;
 
 class StoreTest extends TestCase
 {
@@ -20,7 +21,7 @@ class StoreTest extends TestCase
     {
         $repo = new MockUserRepository();
         $repo->save(
-            new User(id: 1, account_name: 'existing_user', name: '登録済の人', email: 'test@example.com', password: 'aabb1111'),
+            new User(id: new Identified(1), account_name: 'existing_user', name: '登録済の人', email: 'test@example.com', password: 'aabb1111'),
         );
 
         $service = new UserService($repo);
@@ -34,7 +35,7 @@ class StoreTest extends TestCase
     {
         $repo = new MockUserRepository();
         $repo->save(
-            new User(id: 1, account_name: 'account1', name: '登録済の人', email: 'exists@example.com', password: 'aabb1111'),
+            new User(id: new Identified(1), account_name: 'account1', name: '登録済の人', email: 'exists@example.com', password: 'aabb1111'),
         );
 
         $service = new UserService($repo);

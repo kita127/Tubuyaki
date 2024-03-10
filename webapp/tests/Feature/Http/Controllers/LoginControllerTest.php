@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Http\Controllers;
 
+use App\Entities\Identifiable\Identified;
+use App\Entities\Identifiable\Unidentified;
 use App\Entities\User;
 use App\Repositories\User\UserRepository;
 use Tests\TestCase;
@@ -80,7 +82,7 @@ class LoginControllerTest extends TestCase
     private function createUser(): User
     {
         $user = new User(
-            id: null,
+            id: new Unidentified(),
             account_name: 'test_user',
             name: '検証次郎',
             email: 'test_user@example.com',

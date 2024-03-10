@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers\User;
 
+use App\Entities\Identifiable\Unidentified;
 use App\Entities\User;
 use Tests\TestCase;
 
@@ -14,6 +15,9 @@ class UserControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    /**
+     * UserController::me
+     */
     public function test01_01_ログインしているユーザ情報取得(): void
     {
         $user = TubuyakiUser::create(
@@ -97,7 +101,7 @@ class UserControllerTest extends TestCase
         /** @var UserRepository $repo */
         $repo = app()->make(UserRepository::class);
         $repo->save(
-            new User(null, 'existingAcount', '登録済みのひと', 'test@example.com', 'aabb1111'),
+            new User(new Unidentified(), 'existingAcount', '登録済みのひと', 'test@example.com', 'aabb1111'),
         );
 
         $response = $this->post('/api/users', [

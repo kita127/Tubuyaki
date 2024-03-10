@@ -6,6 +6,7 @@ use App\Entities\User;
 use Nette\NotImplementedException;
 use OutOfBoundsException;
 use Illuminate\Support\Collection;
+use App\Entities\Identifiable\Identified;
 
 class MockUserRepository implements UserRepository
 {
@@ -20,7 +21,7 @@ class MockUserRepository implements UserRepository
     public static function insert(array $users): void
     {
         foreach ($users as $user) {
-            static::$dummyRecords[$user->id] = $user;
+            static::$dummyRecords[$user->id->value()] = $user;
         }
     }
 
@@ -39,15 +40,15 @@ class MockUserRepository implements UserRepository
 
     public function save(User $user): User
     {
-        if ($user->id && isset(static::$dummyRecords[$user->id])) {
+        if ($user->id && isset(static::$dummyRecords[$user->id->value()])) {
             // update
-            static::$dummyRecords[$user->id] = $user;
+            static::$dummyRecords[$user->id->value()] = $user;
             return $user;
         } else {
             // create
             $nextId = $this->getMaxId() + 1;
             $newUser = new User(
-                id: $nextId,
+                id: new Identified($nextId),
                 account_name: $user->account_name,
                 name: $user->name,
                 email: $user->email,
@@ -82,7 +83,7 @@ class MockUserRepository implements UserRepository
         $users = collect([]);
         foreach (static::$dummyRecords as $user) {
             if ($this->match($user, $where)) {
-                $users->put($user->id, $user);
+                $users->put($user->id->value(), $user);
             }
         }
         return $users;

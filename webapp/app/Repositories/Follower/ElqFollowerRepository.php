@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use App\Entities\Follower;
 use App\Models\Follower as ElqFollower;
+use App\Entities\Identifiable\Identified;
 
 class ElqFollowerRepository implements FollowerRepository
 {
@@ -15,7 +16,7 @@ class ElqFollowerRepository implements FollowerRepository
      */
     public function save(Follower $follower): Follower
     {
-        if ($follower->id) {
+        if ($follower->id->isIdentified()) {
             $elqFollower = $this->update($follower);
         } else {
             $elqFollower = $this->create($follower);
@@ -59,7 +60,7 @@ class ElqFollowerRepository implements FollowerRepository
 
     private function update(Follower $follower): ElqFollower
     {
-        $ef = ElqFollower::findOrFail($follower->id);
+        $ef = ElqFollower::findOrFail($follower->id->value());
         $ef->user_id = $follower->user_id;
         $ef->followee_id = $follower->followee_id;
         return $ef;
@@ -67,8 +68,9 @@ class ElqFollowerRepository implements FollowerRepository
 
     private function createEntity(ElqFollower $elqFollower): Follower
     {
+        // TODO: モデルからエンティティを生成するように変更する
         return new Follower(
-            $elqFollower->id,
+            new Identified($elqFollower->id),
             $elqFollower->user_id,
             $elqFollower->followee_id,
         );

@@ -7,6 +7,7 @@ use App\Repositories\User\MockUserRepository;
 use App\Repositories\User\UserRepository;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use App\Entities\Identifiable\Identified;
 
 class UserLearning extends TestCase
 {
@@ -39,7 +40,7 @@ class UserLearning extends TestCase
         $repo = app()->make(UserRepository::class);
         $this->assertTrue($repo instanceof MockUserRepository);
         MockUserRepository::insert([
-            new User(id: 1, name: 'モック1', email: 'mock@example.com', password: 'mock-password'),
+            new User(id: new Identified(1), account_name: 'mock_name', name: 'モック1', email: 'mock@example.com', password: 'mock-password'),
         ]);
 
         $user = $repo->find(1);
