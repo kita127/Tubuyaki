@@ -73,9 +73,8 @@ class ElqUserRepository implements UserRepository
         $users = collect([]);
         foreach ($elqUsers as $eu) {
             /** @var ElqUser $eu */
-            $users->put($eu->id, $eu);
+            $users->put($eu->id, $eu->toEntity());
         }
-        // TODO: 返却しているのがEloquentのUser型になっている
         return $users;
     }
 
