@@ -17,7 +17,7 @@ class Follower extends Model
         'followee_id',
     ];
 
-    public function toEntity(): Entity
+    public function toEntity(): EF
     {
         return new EF(
             id: new Identified($this->id),

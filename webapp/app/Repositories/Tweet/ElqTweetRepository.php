@@ -2,21 +2,24 @@
 
 namespace App\Repositories\Tweet;
 
-use App\Repositories\Traits\Eloquent\ElqCommonFeature;
+use App\Repositories\Eloquent\ElqCommonRepository;
+use App\Repositories\Interface\Modifiable;
 use App\Repositories\Tweet\TweetRepository;
 use App\Entities\Tweet;
 use App\Models\Tweet as ElqTweet;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use LogicException;
+use App\Entities\Entity;
 
-class ElqTweetRepository implements TweetRepository
+class ElqTweetRepository implements TweetRepository, Modifiable
 {
-    use ElqCommonFeature;
-
     private readonly Model $model;
-
+    private readonly ElqCommonRepository $commonRepo;
     public function __construct()
     {
         $this->model = new ElqTweet();
+        $this->commonRepo = new ElqCommonRepository($this->model);
     }
 
     /**
@@ -25,21 +28,27 @@ class ElqTweetRepository implements TweetRepository
      */
     public function save(Tweet $tweet): Tweet
     {
-        if ($tweet->id->isIdentified()) {
-            // update
-            return $this->update($tweet);
-        } else {
-            // create
-            return $this->create($tweet);
+        $result = $this->commonRepo->save($tweet, $this);
+        if (!($result instanceof Tweet)) {
+            throw new LogicException;
         }
+        return $result;
     }
 
     /**
-     * @param Tweet $tweet
-     * @return Tweet
+     * @param array<string, mixed> $where
+     * @return Collection<int, Tweet>    key:ID
      */
-    private function create(Tweet $tweet): Tweet
+    public function findAllBy(array $where): Collection
     {
+        return $this->commonRepo->findAllBy($where);
+    }
+
+    public function create(Entity $tweet): Entity
+    {
+        if (!($tweet instanceof Tweet)) {
+            throw new LogicException();
+        }
         $elqTweet = new ElqTweet([
             'user_id' => $tweet->user_id,
             'text' => $tweet->text,
@@ -48,12 +57,11 @@ class ElqTweetRepository implements TweetRepository
         return $elqTweet->toEntity();
     }
 
-    /**
-     * @param Tweet $tweet
-     * @return Tweet
-     */
-    private function update(Tweet $tweet): Tweet
+    public function update(Entity $tweet): Entity
     {
+        if (!($tweet instanceof Tweet)) {
+            throw new LogicException();
+        }
         /** @var ElqTweet $elqTweet */
         $elqTweet = ElqTweet::findOrFail($tweet->id->value());
         $elqTweet->user_id = $tweet->user_id;

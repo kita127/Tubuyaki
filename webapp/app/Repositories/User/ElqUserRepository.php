@@ -2,48 +2,74 @@
 
 namespace App\Repositories\User;
 
+use App\Entities\Entity;
 use App\Entities\User;
 use App\Models\User as ElqUser;
 use App\Models\UserDetail as ElqUserDetail;
+use App\Repositories\Interface\Modifiable;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Collection;
 use LogicException;
-use App\Entities\Identifiable\Identified;
+use App\Repositories\Eloquent\ElqCommonRepository;
+use Illuminate\Database\Eloquent\Model;
 
-class ElqUserRepository implements UserRepository
+class ElqUserRepository implements UserRepository, Modifiable
 {
+    private readonly Model $model;
+    private readonly ElqCommonRepository $commonRepo;
+
+    public function __construct()
+    {
+        $this->model = new ElqUser();
+        $this->commonRepo = new ElqCommonRepository($this->model);
+    }
     public function find(int $id): User
     {
-        $elqUser = ElqUser::findOrFail($id);
-        return $elqUser->toEntity();
+        $result = $this->commonRepo->find($id);
+        if (!($result instanceof User)) {
+            throw new LogicException();
+        }
+        return $result;
     }
 
     public function save(User $user): User
     {
-        if (!$user->id->isIdentified()) {
-            // create
-            $elqUser = new ElqUser();
-            $elqUser->remember_token = $user->remember_token;
-            $elqUser->save();
+        return $this->commonRepo->save($user, $this);
+    }
 
-            $elqUserDetail = new ElqUserDetail();
-            $elqUserDetail->account_name = $user->account_name;
-            $elqUserDetail->name = $user->name;
-            $elqUserDetail->email = $user->email;
-            $elqUserDetail->password = Hash::make($user->password);
-
-            $elqUser->userDetail()->save($elqUserDetail);
-        } else {
-            // update
-            $elqUser = ElqUser::findOrFail($user->id->value());
-            /** @var ElqUser $elqUser */
-            $elqUser->userDetail->account_name = $user->account_name;
-            $elqUser->userDetail->name = $user->name;
-            $elqUser->userDetail->email = $user->email;
-            $elqUser->userDetail->password = Hash::make($user->password);
-            $elqUser->remember_token = $user->remember_token;
+    public function create(Entity $user): Entity
+    {
+        if (!($user instanceof User)) {
+            throw new LogicException();
         }
+        $elqUser = new ElqUser();
+        $elqUser->remember_token = $user->remember_token;
+        $elqUser->save();
+
+        $elqUserDetail = new ElqUserDetail();
+        $elqUserDetail->account_name = $user->account_name;
+        $elqUserDetail->name = $user->name;
+        $elqUserDetail->email = $user->email;
+        $elqUserDetail->password = Hash::make($user->password);
+
+        $elqUser->userDetail()->save($elqUserDetail);
+        return $elqUser->toEntity();
+    }
+
+    public function update(Entity $user): Entity
+    {
+        if (!($user instanceof User)) {
+            throw new LogicException();
+        }
+        $elqUser = ElqUser::findOrFail($user->id->value());
+        /** @var ElqUser $elqUser */
+        $elqUser->userDetail->account_name = $user->account_name;
+        $elqUser->userDetail->name = $user->name;
+        $elqUser->userDetail->email = $user->email;
+        $elqUser->userDetail->password = Hash::make($user->password);
+        $elqUser->remember_token = $user->remember_token;
+        $elqUser->save();
         return $elqUser->toEntity();
     }
 
@@ -53,13 +79,11 @@ class ElqUserRepository implements UserRepository
      */
     public function findOneBy(array $where): ?User
     {
-        $query = $this->createWhereQuery($where);
-        $id = $query->first('users.id');
-        if (!$id) {
+        $result = $this->commonRepo->findOneBy($this->createWhereQuery($where));
+        if (!($result instanceof User)) {
             return null;
         }
-        $elqUser = ElqUser::findOrFail($id)->first();
-        return $elqUser->toEntity();
+        return $result;
     }
 
     /**
@@ -68,14 +92,7 @@ class ElqUserRepository implements UserRepository
      */
     public function findAllBy(array $where): Collection
     {
-        $query = $this->createWhereQuery($where);
-        $elqUsers = $query->get();
-        $users = collect([]);
-        foreach ($elqUsers as $eu) {
-            /** @var ElqUser $eu */
-            $users->put($eu->id, $eu->toEntity());
-        }
-        return $users;
+        return $this->commonRepo->findAllBy($this->createWhereQuery($where));
     }
 
     /**
@@ -84,25 +101,7 @@ class ElqUserRepository implements UserRepository
      */
     public function findIn(array $whereIn): Collection
     {
-        $keys = array_keys($whereIn);
-        if (count($keys) !== 1) {
-            throw new LogicException();
-        }
-        $values = array_values($whereIn);
-        if (count($values) !== 1) {
-            throw new LogicException();
-        }
-        if (!is_array($values[0])) {
-            throw new LogicException();
-        }
-        $query = ElqUser::query()->whereIn($keys[0], $values[0]);
-        $users = $query->get();
-        $result = collect([]);
-        foreach ($users as $user) {
-            /** @var ElqUser $user */
-            $result->put($user->id, $user->toEntity());
-        }
-        return $result;
+        return $this->commonRepo->findIn(($whereIn));
     }
 
     /**
