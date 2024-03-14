@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Follow\FollowController;
+use App\Http\Controllers\TweetController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,7 +19,10 @@ use Illuminate\Support\Facades\Route;
 // 認証後のAPI
 Route::middleware('auth:sanctum')->group(function () {
     Route::group(['prefix' => 'users'], function () {
-        Route::get('/me', [UserController::class, 'me']);
+        Route::group(['prefix' => 'me'], function () {
+            Route::get('/', [UserController::class, 'me']);
+            Route::get('/tweets', [TweetController::class, 'getMyTweets']);
+        });
         Route::group(['prefix' => '{id}'], function () {
             Route::group(['prefix' => 'following'], function () {
                 Route::get('/', [FollowController::class, 'index']);

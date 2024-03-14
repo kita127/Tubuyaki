@@ -25,6 +25,6 @@ interface FollowerRepository
      */
     public function findOneBy(array $where): ?Follower;
 
-    public function delete(Follower $follwer);
+    public function delete(Follower $follower): bool;
 
 }

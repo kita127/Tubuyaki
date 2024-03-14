@@ -2,25 +2,37 @@
 
 namespace App\Repositories\Follower;
 
-use Illuminate\Database\Eloquent\Builder;
+use App\Entities\Entity;
+use App\Repositories\Interface\Modifiable;
 use Illuminate\Support\Collection;
 use App\Entities\Follower;
 use App\Models\Follower as ElqFollower;
+use App\Repositories\Eloquent\ElqCommonRepository;
+use Illuminate\Database\Eloquent\Model;
+use LogicException;
 
-class ElqFollowerRepository implements FollowerRepository
+class ElqFollowerRepository implements FollowerRepository, Modifiable
 {
+    private readonly Model $model;
+    private readonly ElqCommonRepository $commonRepo;
+
+    public function __construct()
+    {
+        $this->model = new ElqFollower();
+        $this->commonRepo = new ElqCommonRepository($this->model);
+    }
+
     /**
      * @param Follower $follower
      * @return Follower
      */
     public function save(Follower $follower): Follower
     {
-        if ($follower->id->isIdentified()) {
-            $elqFollower = $this->update($follower);
-        } else {
-            $elqFollower = $this->create($follower);
+        $result = $this->commonRepo->save($follower, $this);
+        if (!($result instanceof Follower)) {
+            throw new LogicException();
         }
-        return $elqFollower->toEntity();
+        return $result;
     }
 
     /**
@@ -29,9 +41,7 @@ class ElqFollowerRepository implements FollowerRepository
      */
     public function findAllBy(array $where): Collection
     {
-        $query = $this->createWhereQuery($where);
-        $followers = $query->get();
-        return $followers->map(fn(ElqFollower $f) => $f->toEntity())->keyBy('id');
+        return $this->commonRepo->findAllBy($where);
     }
 
     /**
@@ -40,46 +50,40 @@ class ElqFollowerRepository implements FollowerRepository
      */
     public function findOneBy(array $where): ?Follower
     {
-        $query = $this->createWhereQuery($where);
-        /** @var ElqFollower $follower */
-        $follower = $query->first();
-        return $follower?->toEntity();
-    }
-
-    public function delete(Follower $follwer): void
-    {
-        $model = ElqFollower::findOrFail($follwer->id->value());
-        $model->delete();
-    }
-
-    /**
-     * @param array<string, mixed> $where
-     * @return Builder
-     */
-    private function createWhereQuery(array $where): Builder
-    {
-        $query = ElqFollower::query();
-        foreach ($where as $key => $value) {
-            $query->where($key, $value);
+        $result = $this->commonRepo->findOneBy($where);
+        if (!($result instanceof Follower)) {
+            return null;
         }
-        return $query;
+        return $result;
     }
 
-    private function create(Follower $follower): ElqFollower
+    public function delete(Follower $follower): bool
     {
+        return $this->commonRepo->delete($follower);
+    }
+
+    public function create(Entity $follower): Entity
+    {
+        if (!($follower instanceof Follower)) {
+            throw new LogicException;
+        }
         $ef = new ElqFollower([
             'user_id' => $follower->user_id,
             'followee_id' => $follower->followee_id,
         ]);
         $ef->save();
-        return $ef;
+        return $ef->toEntity();
     }
 
-    private function update(Follower $follower): ElqFollower
+    public function update(Entity $follower): Entity
     {
+        if (!($follower instanceof Follower)) {
+            throw new LogicException;
+        }
         $ef = ElqFollower::findOrFail($follower->id->value());
         $ef->user_id = $follower->user_id;
         $ef->followee_id = $follower->followee_id;
-        return $ef;
+        $ef->save();
+        return $ef->toEntity();
     }
 }
