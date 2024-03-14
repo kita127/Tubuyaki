@@ -4,6 +4,7 @@ namespace App\Repositories\User;
 
 use App\Entities\Entity;
 use App\Entities\User;
+use App\Models\BaseModel;
 use App\Models\User as ElqUser;
 use App\Models\UserDetail as ElqUserDetail;
 use App\Repositories\Interface\Modifiable;
@@ -12,11 +13,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Collection;
 use LogicException;
 use App\Repositories\Eloquent\ElqCommonRepository;
-use Illuminate\Database\Eloquent\Model;
 
 class ElqUserRepository implements UserRepository, Modifiable
 {
-    private readonly Model $model;
+    private readonly BaseModel $model;
     private readonly ElqCommonRepository $commonRepo;
 
     public function __construct()

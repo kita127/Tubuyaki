@@ -3,12 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Entities\Entity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+// もともと使用していたAuthenticatableクラス
+// use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\UserDetail;
-use App\Entities\User as EUser;
 use App\Entities\Identifiable\Identified;
 
 class User extends Authenticatable
@@ -45,9 +46,9 @@ class User extends Authenticatable
         return $this->hasOne(UserDetail::class);
     }
 
-    public function toEntity(): EUser
+    public function toEntity(): Entity
     {
-        return new EUser(
+        return new \App\Entities\User(
             id: new Identified($this->id),
             account_name: $this->userDetail->account_name,
             name: $this->userDetail->name,

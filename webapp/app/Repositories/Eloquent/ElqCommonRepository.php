@@ -3,16 +3,16 @@
 namespace App\Repositories\Eloquent;
 
 use App\Entities\Entity;
+use App\Models\BaseModel;
 use App\Repositories\Interface\Modifiable;
 use Illuminate\Contracts\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use LogicException;
 
 class ElqCommonRepository
 {
     public function __construct(
-        private readonly Model $model,
+        private readonly BaseModel $model,
     ) {
     }
 
@@ -35,9 +35,9 @@ class ElqCommonRepository
         } else {
             throw new LogicException();
         }
+        /** @var Collection<BaseModel> $models */
         $models = $query->get();
-        // TODO: toEntiry()を保証するためインタフェース化すること
-        return $models->map(fn(Model $f) => $f->toEntity())->keyBy('id');
+        return $models->map(fn(BaseModel $f) => $f->toEntity())->keyBy('id');
     }
 
     /**
@@ -75,10 +75,10 @@ class ElqCommonRepository
             throw new LogicException();
         }
         $query = $this->model->query()->whereIn($keys[0], $values[0]);
+        /** @var Collection<BaseModel> $models */
         $models = $query->get();
         $result = collect([]);
         foreach ($models as $model) {
-            /** @var Model $model */
             $result->put($model->id, $model->toEntity());
         }
         return $result;
