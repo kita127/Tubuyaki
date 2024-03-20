@@ -23,8 +23,7 @@ class TweetControllerTest extends TestCase
     }
 
     /**
-     * A basic feature test example.
-     *
+     * TweetController::getMyTweets
      * @return void
      */
     public function test01_01_自分のつぶやき一覧を取得する(): void
@@ -33,8 +32,7 @@ class TweetControllerTest extends TestCase
         /** @var UserAssistance $userAssistance */
         $userAssistance = app()->make(UserAssistance::class);
         $user = $userAssistance->createUser();
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), 'つぶやきの内容');
-        $tweet = $this->tweetRepository->save($tweet);
+        $tweet = $this->createTweet($user, 'つぶやきの内容');
 
         // 実行
         $response = $this->actingAs($user)->get("api/users/me/tweets");
@@ -54,5 +52,44 @@ class TweetControllerTest extends TestCase
             ],
             $content
         );
+    }
+
+    /**
+     * TweetController::getMyTweets
+     * @return void
+     */
+    public function test02_01_任意のユーザーのつぶやき一覧を取得する(): void
+    {
+        // 準備
+        /** @var UserAssistance $userAssistance */
+        $userAssistance = app()->make(UserAssistance::class);
+        $me = $userAssistance->createUser();
+        $other = $userAssistance->createUser('other', '他人ユーザ', 'other@example.net', 'password');
+        $tweet = $this->createTweet($other, '他人のつぶやき');
+
+        // 実行
+        $response = $this->actingAs($me)->get("api/users/{$other->id->value()}/tweets");
+
+        // 検証
+        $response->assertStatus(200);
+        $content = $response->json();
+        $this->assertSame(
+            [
+                'tweets' => [
+                    [
+                        'text' => '他人のつぶやき',
+                        'created_at' => $tweet->created_at,
+                        'updated_at' => $tweet->updated_at,
+                    ],
+                ],
+            ],
+            $content
+        );
+    }
+
+    private function createTweet(TubuyakiUser $user, string $content): Tweet
+    {
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), $content);
+        return $this->tweetRepository->save($tweet);
     }
 }
