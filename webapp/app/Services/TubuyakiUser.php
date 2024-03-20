@@ -33,10 +33,21 @@ class TubuyakiUser implements Authenticatable, Arrayable
     }
 
     public function __construct(
-        private UserEntity $entity,
+        private readonly UserEntity $entity,
     ) {
         $this->id = $this->entity->id;
     }
+
+    public function accountName(): string
+    {
+        return $this->entity->account_name;
+    }
+
+    public function name(): string
+    {
+        return $this->entity->name;
+    }
+
     /**
      * Get the name of the unique identifier for the user.
      *

@@ -142,14 +142,13 @@ class TweetControllerTest extends TestCase
         }
 
         // 更新時間を変更する
-        $x = $tweets->get(1);
-        $x->text = $x->text . '<更新後>';
-        Carbon::setTestNow($this->now->addHour());
-        $this->tweetRepository->save($x);
-        $x = $tweets->get(2);
-        $x->text = $x->text . '<更新後>';
-        Carbon::setTestNow($this->now->addHour());
-        $this->tweetRepository->save($x);
+        // 取得する返信は更新時間の降順になるはず
+        $fst = $tweets->get(0);
+        $fst = $this->updateTweetWithTime($fst, $this->now->addHour());
+        $snd = $tweets->get(1);
+        $snd = $this->updateTweetWithTime($snd, $this->now->addHour());
+        $thd = $tweets->get(2);
+        $thd = $this->updateTweetWithTime($thd, $this->now->addHour());
 
         // 実行
         $response = $this->actingAs($me)->get("api/tweets/{$ownTweet->id->value()}/replies");
@@ -159,12 +158,60 @@ class TweetControllerTest extends TestCase
         $content = $response->json();
         $this->assertSame(
             [
-                'replies' => [],
+                'replies' => [
+                    [
+                        'user' => [
+                            'id' => $other->id->value(),
+                            'account_name' => $other->accountName(),
+                            'name' => $other->name(),
+                        ],
+                        'reply' => [
+                            'id' => $thd->id->value(),
+                            'text' => $thd->text,
+                            'created_at' => $thd->created_at,
+                            'updated_at' => $thd->updated_at,
+                        ],
+                    ],
+                    [
+                        'user' => [
+                            'id' => $other->id->value(),
+                            'account_name' => $other->accountName(),
+                            'name' => $other->name(),
+                        ],
+                        'reply' => [
+                            'id' => $snd->id->value(),
+                            'text' => $snd->text,
+                            'created_at' => $snd->created_at,
+                            'updated_at' => $snd->updated_at,
+                        ],
+                    ],
+                    [
+                        'user' => [
+                            'id' => $other->id->value(),
+                            'account_name' => $other->accountName(),
+                            'name' => $other->name(),
+                        ],
+                        'reply' => [
+                            'id' => $fst->id->value(),
+                            'text' => $fst->text,
+                            'created_at' => $fst->created_at,
+                            'updated_at' => $fst->updated_at,
+                        ],
+                    ],
+                ],
             ],
             $content
         );
         // TODO: データの確認もする
 
+    }
+
+    private function updateTweetWithTime(Tweet $tweet, Carbon $time): Tweet
+    {
+        // 何かしら更新しないと更新されないので
+        $tweet->text = $tweet->text . '<更新後>';
+        Carbon::setTestNow($time);
+        return $this->tweetRepository->save($tweet);
     }
 
     private function createTweet(TubuyakiUser $user, string $content): Tweet
