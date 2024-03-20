@@ -18,10 +18,9 @@ class FollowService
     ) {
     }
 
-    public function getFollowees(int $id): Collection
+    public function getFollowees(TubuyakiUser $user): Collection
     {
-        // TODO: 引数にはTubuyakiUserを取りたい
-        $followRelations = $this->followerRepository->findAllBy(['user_id' => $id]);
+        $followRelations = $this->followerRepository->findAllBy(['user_id' => $user->id->value()]);
         $followeeIdLs = $followRelations->map(fn (Follower $follower) => $follower->followee_id);
         $followees = $this->userRepository->findIn(['id' => $followeeIdLs->all()]);
         return $followees->map(fn (User $user) => [
@@ -32,10 +31,9 @@ class FollowService
         ]);
     }
 
-    public function getFollowers(int $id): Collection
+    public function getFollowers(TubuyakiUser $user): Collection
     {
-        // TODO: 引数にはTubuyakiUserを取りたい        
-        $followRelations = $this->followerRepository->findAllBy(['followee_id' => $id]);
+        $followRelations = $this->followerRepository->findAllBy(['followee_id' => $user->id->value()]);
         $followerIdLs = $followRelations->map(fn (Follower $follower) => $follower->user_id);
         $followers = $this->userRepository->findIn(['id' => $followerIdLs->all()]);
         return $followers->map(fn (User $user) => [

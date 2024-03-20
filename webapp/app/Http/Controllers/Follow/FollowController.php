@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\User\UserRepository;
 use App\Services\Follow\FollowService;
+use App\Services\TubuyakiUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -26,7 +27,9 @@ class FollowController extends Controller
      */
     public function getFollowees(int $id): JsonResponse
     {
-        $followees = $this->service->getFollowees($id);
+        $ue = $this->userRepo->find($id);
+        $user = new TubuyakiUser($ue);
+        $followees = $this->service->getFollowees($user);
         return response()->json(
             [
                 'followees' => $followees->values(),
@@ -37,7 +40,9 @@ class FollowController extends Controller
 
     public function getFollowers(int $id): JsonResponse
     {
-        $followers = $this->service->getFollowers($id);
+        $ue = $this->userRepo->find($id);
+        $user = new TubuyakiUser($ue);
+        $followers = $this->service->getFollowers($user);
         return response()->json(
             [
                 'followers' => $followers->values(),
@@ -70,7 +75,7 @@ class FollowController extends Controller
     {
         /** @var TubuyakiUser $user */
         $user = $request->user();
-        $followees = $this->service->getFollowees($user->id->value());
+        $followees = $this->service->getFollowees($user);
         return response()->json(
             [
                 'followees' => $followees->values(),
