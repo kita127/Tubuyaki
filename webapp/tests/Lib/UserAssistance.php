@@ -34,7 +34,7 @@ class UserAssistance
         for ($i = 0; $i < $count; $i++) {
             $account_name = fake()->userName();
             $name = fake()->name();
-            $email = fake()->address();
+            $email = fake()->email();
             $password = fake()->password();
             $u = $this->createUser($account_name, $name, $email, $password);
             $users->put($u->id->value(), $u);

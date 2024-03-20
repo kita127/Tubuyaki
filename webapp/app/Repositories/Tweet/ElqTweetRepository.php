@@ -11,6 +11,7 @@ use App\Models\Tweet as ElqTweet;
 use Illuminate\Support\Collection;
 use LogicException;
 use App\Entities\Entity;
+use App\Models\Reply as ElqReply;
 
 class ElqTweetRepository implements TweetRepository, Modifiable
 {
@@ -36,12 +37,51 @@ class ElqTweetRepository implements TweetRepository, Modifiable
     }
 
     /**
+     * @param int $id
+     * @return Tweet
+     */
+    public function find(int $id): Tweet
+    {
+        $result = $this->commonRepo->find($id);
+        if (!($result instanceof Tweet)) {
+            throw new LogicException;
+        }
+        return $result;
+    }
+
+    /**
      * @param array<string, mixed> $where
      * @return Collection<int, Tweet>    key:ID
      */
     public function findAllBy(array $where): Collection
     {
         return $this->commonRepo->findAllBy($where);
+    }
+
+    /**
+     * @param Tweet $reply  返信つぶやき
+     * @param Tweet $toTweet 返信対象のつぶやき
+     */
+    public function reply(Tweet $reply, Tweet $toTweet): void
+    {
+        $r = new ElqReply(['tweet_id' => $reply->id->value(), 'to_tweet_id' => $toTweet->id->value()]);
+        $r->save();
+    }
+
+    /**
+     * $tweetのすべての返信を取得する
+     * @param Tweet $tweet
+     * @return Collection<Tweet>
+     */
+    public function findAllReplies(Tweet $tweet): Collection
+    {
+        /** @var Collection<ElqReply> $replyRelations */
+        $replyRelations = ElqReply::where('to_tweet_id', $tweet->id->value())->get();
+        $replyIdList = $replyRelations->pluck('tweet_id');
+        /** @var Collection<ElqTweet> $replies */
+        $replies = ElqTweet::whereIn('id', $replyIdList->all())->get();
+        $entities = $replies->map(fn (ElqTweet $t) => $t->toEntity());
+        return $entities;
     }
 
     public function create(Entity $tweet): Entity

@@ -124,7 +124,7 @@ class TweetControllerTest extends TestCase
         // 準備
         $me = $this->userAssistance->createUser();
         $ownTweet = $this->createTweet($me, '自分のツイート');
-        [$other] = $this->userAssistance->createUsers(1);
+        $other = $this->userAssistance->createUsers(1)->first();
         $tweets = $this->createTweets($other, 3);
         foreach ($tweets as $reply) {
             $this->createReplies($reply, $ownTweet);
@@ -135,7 +135,15 @@ class TweetControllerTest extends TestCase
 
         // 検証
         $response->assertStatus(200);
+        $content = $response->json();
+        $this->assertSame(
+            [
+                'replies' => [],
+            ],
+            $content
+        );
         // TODO: データの確認もする
+
     }
 
     private function createTweet(TubuyakiUser $user, string $content): Tweet
@@ -153,7 +161,7 @@ class TweetControllerTest extends TestCase
         for ($i = 0; $i < $count; $i++) {
             $text = fake()->realText(140);
             $t = $this->createTweet($user, $text);
-            $tweets->put($t->id->value(), $text);
+            $tweets->put($t->id->value(), $t);
         }
         return $tweets;
     }

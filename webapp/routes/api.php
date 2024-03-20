@@ -39,6 +39,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::group(['prefix' => 'tweets'], function () {
         Route::post('/', [TweetController::class, 'post']);
+        Route::group(['prefix' => '{id}'], function () {
+            Route::get('/replies', [TweetController::class, 'getReplies']);
+        })->whereNumber('id');
     });
 });
 

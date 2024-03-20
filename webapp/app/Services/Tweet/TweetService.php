@@ -7,11 +7,13 @@ use App\Repositories\Tweet\TweetRepository;
 use App\Services\TubuyakiUser;
 use Illuminate\Support\Collection;
 use App\Entities\Tweet;
+use App\Repositories\User\UserRepository;
 
 class TweetService
 {
     public function __construct(
         private readonly TweetRepository $tweetRepository,
+        private readonly UserRepository $userRepository,
     ) {
     }
     /**
@@ -37,5 +39,26 @@ class TweetService
     {
         $tweet = new Tweet(new Unidentified(), $user->id->value(), $text);
         $this->tweetRepository->save($tweet);
+    }
+
+    /**
+     * @param Tweet $tweet
+     * @return Collection<array{user: User, reply: Tweet}>
+     */
+    public function getReplies(Tweet $tweet): Collection
+    {
+        /** @var Collection<Tweet> $replies */
+        $replies = $this->tweetRepository->findAllReplies($tweet);
+        $owners = $this->userRepository->findIn(['id' => $replies->pluck('user_id')->all()]);
+        $result = collect([]);
+        foreach ($replies as $reply) {
+            $owner = $owners->get($reply->user_id);
+            $v = [
+                'user' => $owner,
+                'reply' => $reply,
+            ];
+            $result->push($v);
+        }
+        return $result;
     }
 }
