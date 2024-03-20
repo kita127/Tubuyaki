@@ -2,19 +2,19 @@
 
 namespace App\Repositories\Tweet;
 
+use App\Models\BaseModel;
 use App\Repositories\Eloquent\ElqCommonRepository;
 use App\Repositories\Interface\Modifiable;
 use App\Repositories\Tweet\TweetRepository;
 use App\Entities\Tweet;
 use App\Models\Tweet as ElqTweet;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use LogicException;
 use App\Entities\Entity;
 
 class ElqTweetRepository implements TweetRepository, Modifiable
 {
-    private readonly Model $model;
+    private readonly BaseModel $model;
     private readonly ElqCommonRepository $commonRepo;
     public function __construct()
     {

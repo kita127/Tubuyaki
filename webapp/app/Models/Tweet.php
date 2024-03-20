@@ -3,12 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use App\Entities\Entity;
-use App\Entities\Tweet as ETweet;
 use App\Entities\Identifiable\Identified;
 
-class Tweet extends Model
+class Tweet extends BaseModel
 {
     use HasFactory;
 
@@ -19,7 +17,7 @@ class Tweet extends Model
 
     public function toEntity(): Entity
     {
-        return new ETweet(
+        return new \App\Entities\Tweet(
             id: new Identified($this->id),
             user_id: $this->user_id,
             text: $this->text,

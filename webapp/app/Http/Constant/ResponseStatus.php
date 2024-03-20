@@ -4,9 +4,7 @@ namespace App\Http\Constant;
 
 class ResponseStatus
 {
-    // 200
     const CREATED = 201;
-
-    // 400
+    const NO_CONTENT = 204;
     const CONFLICT = 409;
 }

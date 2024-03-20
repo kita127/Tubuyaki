@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use App\Entities\Entity;
-use App\Entities\Follower as EF;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use App\Entities\Identifiable\Identified;
 
-class Follower extends Model
+class Follower extends BaseModel
 {
     use HasFactory;
 
@@ -17,9 +16,9 @@ class Follower extends Model
         'followee_id',
     ];
 
-    public function toEntity(): EF
+    public function toEntity(): Entity
     {
-        return new EF(
+        return new \App\Entities\Follower(
             id: new Identified($this->id),
             user_id: $this->user_id,
             followee_id: $this->followee_id,

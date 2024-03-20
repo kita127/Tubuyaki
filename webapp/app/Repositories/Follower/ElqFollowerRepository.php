@@ -3,17 +3,17 @@
 namespace App\Repositories\Follower;
 
 use App\Entities\Entity;
+use App\Models\BaseModel;
 use App\Repositories\Interface\Modifiable;
 use Illuminate\Support\Collection;
 use App\Entities\Follower;
 use App\Models\Follower as ElqFollower;
 use App\Repositories\Eloquent\ElqCommonRepository;
-use Illuminate\Database\Eloquent\Model;
 use LogicException;
 
 class ElqFollowerRepository implements FollowerRepository, Modifiable
 {
-    private readonly Model $model;
+    private readonly BaseModel $model;
     private readonly ElqCommonRepository $commonRepo;
 
     public function __construct()
