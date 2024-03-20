@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Follow;
 
+use App\Http\Constant\ResponseStatus;
 use App\Http\Controllers\Controller;
 use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\User\UserRepository;
@@ -34,7 +35,6 @@ class FollowController extends Controller
             [
                 'followees' => $followees->values(),
             ],
-            200,
         );
     }
 
@@ -47,7 +47,6 @@ class FollowController extends Controller
             [
                 'followers' => $followers->values(),
             ],
-            200,
         );
     }
 
@@ -57,8 +56,7 @@ class FollowController extends Controller
         /** @var Authenticatable $user */
         $user = $request->user();
         $this->service->follow($user, $target);
-        // TODO: レスポンスコードも定数化する
-        return response('', 201);
+        return response('', ResponseStatus::CREATED);
     }
 
     public function unfollow(Request $request, int $id): Response
@@ -67,8 +65,7 @@ class FollowController extends Controller
         /** @var Authenticatable $user */
         $user = $request->user();
         $this->service->unfollow($user, $target);
-        // TODO: レスポンスコードも定数化する
-        return response('', 204);
+        return response('', ResponseStatus::NO_CONTENT);
     }
 
     public function getMyFollowees(Request $request): JsonResponse

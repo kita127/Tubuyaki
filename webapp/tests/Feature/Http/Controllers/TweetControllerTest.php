@@ -15,11 +15,13 @@ class TweetControllerTest extends TestCase
     use DatabaseTransactions;
 
     private readonly TweetRepository $tweetRepository;
+    private readonly UserAssistance $userAssistance;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->tweetRepository = app()->make(TweetRepository::class);
+        $this->userAssistance = app()->make(UserAssistance::class);
     }
 
     /**
@@ -30,8 +32,7 @@ class TweetControllerTest extends TestCase
     {
         // 準備
         /** @var UserAssistance $userAssistance */
-        $userAssistance = app()->make(UserAssistance::class);
-        $user = $userAssistance->createUser();
+        $user = $this->userAssistance->createUser();
         $tweet = $this->createTweet($user, 'つぶやきの内容');
 
         // 実行
@@ -62,9 +63,8 @@ class TweetControllerTest extends TestCase
     {
         // 準備
         /** @var UserAssistance $userAssistance */
-        $userAssistance = app()->make(UserAssistance::class);
-        $me = $userAssistance->createUser();
-        $other = $userAssistance->createUser('other', '他人ユーザ', 'other@example.net', 'password');
+        $me = $this->userAssistance->createUser();
+        $other = $this->userAssistance->createUser('other', '他人ユーザ', 'other@example.net', 'password');
         $tweet = $this->createTweet($other, '他人のつぶやき');
 
         // 実行
@@ -84,6 +84,34 @@ class TweetControllerTest extends TestCase
                 ],
             ],
             $content
+        );
+    }
+
+    /**
+     * TweetController::post
+     */
+    public function test03_01_つぶやきを投稿する(): void
+    {
+        $me = $this->userAssistance->createUser();
+        $response = $this->actingAs($me)->post(
+            "api/tweets",
+            [
+                'text' => '新規ツイート',
+            ]
+        );
+        $response->assertStatus(201);
+        $tweets = $this->tweetRepository->findAllBy(['user_id' => $me->id->value()]);
+        $this->assertSame(
+            [
+                [
+                    'id' => $tweets->first()->id->value(),
+                    'user_id' => $me->id->value(),
+                    'text' => '新規ツイート',
+                    'created_at' => $tweets->first()->created_at,
+                    'updated_at' => $tweets->first()->updated_at,
+                ],
+            ],
+            $tweets->values()->toArray()
         );
     }
 

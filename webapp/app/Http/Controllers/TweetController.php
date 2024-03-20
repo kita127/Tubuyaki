@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Constant\ResponseStatus;
+use App\Http\Requests\Tweet\TweetRequest;
 use App\Repositories\User\UserRepository;
 use App\Services\TubuyakiUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\Tweet\TweetService;
+use Illuminate\Http\Response;
 
 class TweetController extends Controller
 {
@@ -29,7 +32,7 @@ class TweetController extends Controller
         ], 200);
     }
 
-    public function getTweets($id): JsonResponse
+    public function getTweets(int $id): JsonResponse
     {
         $ue = $this->userRepo->find($id);
         $user = new TubuyakiUser($ue);
@@ -39,5 +42,14 @@ class TweetController extends Controller
                 'tweets' => $tweets->values(),
             ]
         );
+    }
+
+    public function post(TweetRequest $request): Response
+    {
+        /** @var TubuyakiUser $user */
+        $user = $request->user();
+        $text = $request->input('text');
+        $this->service->post($user, $text);
+        return response('', ResponseStatus::CREATED);
     }
 }
