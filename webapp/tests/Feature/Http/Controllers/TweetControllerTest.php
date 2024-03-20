@@ -9,6 +9,7 @@ use Tests\Lib\UserAssistance;
 use App\Services\TubuyakiUser;
 use App\Entities\Tweet;
 use App\Repositories\Tweet\TweetRepository;
+use Illuminate\Support\Collection;
 
 class TweetControllerTest extends TestCase
 {
@@ -115,9 +116,54 @@ class TweetControllerTest extends TestCase
         );
     }
 
+    /**
+     * TweetController::getReplies
+     */
+    public function test04_01_つぶやきの返信一覧を取得する(): void
+    {
+        // 準備
+        $me = $this->userAssistance->createUser();
+        $ownTweet = $this->createTweet($me, '自分のツイート');
+        [$other] = $this->userAssistance->createUsers(1);
+        $tweets = $this->createTweets($other, 3);
+        foreach ($tweets as $reply) {
+            $this->createReplies($reply, $ownTweet);
+        }
+
+        // 実行
+        $response = $this->actingAs($me)->get("api/tweets/{$ownTweet->id->value()}/replies");
+
+        // 検証
+        $response->assertStatus(200);
+        // TODO: データの確認もする
+    }
+
     private function createTweet(TubuyakiUser $user, string $content): Tweet
     {
         $tweet = new Tweet(new Unidentified(), $user->id->value(), $content);
         return $this->tweetRepository->save($tweet);
+    }
+
+    /**
+     * @return Collection<Tweet>
+     */
+    private function createTweets(TubuyakiUser $user, int $count): Collection
+    {
+        $tweets = collect([]);
+        for ($i = 0; $i < $count; $i++) {
+            $text = fake()->realText(140);
+            $t = $this->createTweet($user, $text);
+            $tweets->put($t->id->value(), $text);
+        }
+        return $tweets;
+    }
+
+    /**
+     * @param Tweet $tweet
+     * @param Collection<Tweet> $replies
+     */
+    private function createReplies(Tweet $reply, Tweet $toTweet): void
+    {
+        $this->tweetRepository->reply($reply, $toTweet);
     }
 }
