@@ -5,6 +5,7 @@ namespace Tests\Lib;
 use App\Entities\User;
 use App\Entities\Identifiable\Unidentified;
 use App\Repositories\User\UserRepository;
+use App\Services\TubuyakiUser;
 
 class UserAssistance
 {
@@ -17,8 +18,9 @@ class UserAssistance
         string $name = '検証さん',
         string $email = 'test@example.net',
         string $password = 'password',
-    ): User {
+    ): TubuyakiUser {
         $user = new User(new Unidentified(), $account_name, $name, $email, $password);
-        return $this->userRepository->save($user);
+        $user = $this->userRepository->save($user);
+        return new TubuyakiUser($user);
     }
 }

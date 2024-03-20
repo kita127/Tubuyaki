@@ -3,7 +3,6 @@
 namespace Tests\Feature\Http\Controllers;
 
 use App\Entities\Identifiable\Unidentified;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Lib\UserAssistance;
@@ -36,10 +35,9 @@ class TweetControllerTest extends TestCase
         $user = $userAssistance->createUser();
         $tweet = new Tweet(new Unidentified(), $user->id->value(), 'つぶやきの内容');
         $tweet = $this->tweetRepository->save($tweet);
-        $loginUser = new TubuyakiUser($user);
 
         // 実行
-        $response = $this->actingAs($loginUser)->get("api/users/me/tweets");
+        $response = $this->actingAs($user)->get("api/users/me/tweets");
 
         // 検証
         $response->assertStatus(200);
@@ -56,6 +54,5 @@ class TweetControllerTest extends TestCase
             ],
             $content
         );
-
     }
 }
