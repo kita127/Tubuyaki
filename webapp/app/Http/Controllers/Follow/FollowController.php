@@ -24,9 +24,8 @@ class FollowController extends Controller
      *
      * @return JsonResponse
      */
-    public function index(int $id): JsonResponse
+    public function getFollowees(int $id): JsonResponse
     {
-        // TODO: getFolloweesにしたい
         $followees = $this->service->getFollowees($id);
         return response()->json(
             [

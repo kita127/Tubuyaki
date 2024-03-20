@@ -26,7 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
         });
         Route::group(['prefix' => '{id}'], function () {
             Route::group(['prefix' => 'following'], function () {
-                Route::get('/', [FollowController::class, 'index']);
+                Route::get('/', [FollowController::class, 'getFollowees']);
                 Route::post('/', [FollowController::class, 'follow']);
                 Route::delete('/', [FollowController::class, 'unfollow']);
             });
