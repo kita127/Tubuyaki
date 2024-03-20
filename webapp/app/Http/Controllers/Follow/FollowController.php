@@ -26,6 +26,7 @@ class FollowController extends Controller
      */
     public function index(int $id): JsonResponse
     {
+        // TODO: getFolloweesにしたい
         $followees = $this->service->getFollowees($id);
         return response()->json(
             [
@@ -64,6 +65,18 @@ class FollowController extends Controller
         $this->service->unfollow($user, $target);
         // TODO: レスポンスコードも定数化する
         return response('', 204);
+    }
+
+    public function getMyFollowees(Request $request): JsonResponse
+    {
+        /** @var TubuyakiUser $user */
+        $user = $request->user();
+        $followees = $this->service->getFollowees($user->id->value());
+        return response()->json(
+            [
+                'followees' => $followees->values(),
+            ]
+        );
     }
 
     /**

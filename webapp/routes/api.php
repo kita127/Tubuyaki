@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::group(['prefix' => 'me'], function () {
             Route::get('/', [UserController::class, 'me']);
             Route::get('/tweets', [TweetController::class, 'getMyTweets']);
+            Route::get('/following', [FollowController::class, 'getMyFollowees']);
         });
         Route::group(['prefix' => '{id}'], function () {
             Route::group(['prefix' => 'following'], function () {

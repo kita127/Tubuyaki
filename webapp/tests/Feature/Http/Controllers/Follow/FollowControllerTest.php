@@ -134,6 +134,37 @@ class FollowControllerTest extends TestCase
     }
 
     /**
+     * FollowController::getMyFollowees
+     */
+    public function test05_01_自分がフォローしているフォロワーの一覧を取得する(): void
+    {
+        // 準備
+        /** @var User $me */
+        /** @var User $fuga */
+        [$me, $fuga] = $this->createUsers();
+        $this->createFollowingRelation($me, $fuga);
+        $loginUser = new TubuyakiUser($me);
+
+        // 実行
+        $response = $this->actingAs($loginUser)->get("/api/users/me/following");
+
+        // 検証
+        $response->assertStatus(200);
+        $this->assertSame(
+            [
+                'followees' => [
+                    [
+                        'id' => $fuga->id->value(),
+                        'account_name' => 'fuga',
+                        'name' => 'ふが次郎',
+                    ],
+                ],
+            ],
+            $response->json()
+        );
+    }
+
+    /**
      * @return Collection<User>
      */
     private function createUsers(): Collection
@@ -147,7 +178,11 @@ class FollowControllerTest extends TestCase
 
     private function createFollowingRelation(User $follower, User $followee): void
     {
-        $f = new Follower(new Unidentified(), $follower->id->value(), $followee->id->value());
+        $f = new Follower(
+            id: new Unidentified(),
+            user_id: $follower->id->value(),
+            followee_id: $followee->id->value()
+        );
         $this->followerRepo->save($f);
     }
 }
