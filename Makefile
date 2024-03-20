@@ -22,3 +22,8 @@ down:
 #== test
 test:
 	docker compose exec apache php artisan test --env=testing
+
+#== Re migrate
+migrate:
+	docker compose exec apache php artisan migrate:fresh --seed
+	docker compose exec apache php artisan migrate:fresh --env=testing
