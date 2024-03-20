@@ -9,20 +9,31 @@ use Tests\Lib\UserAssistance;
 use App\Services\TubuyakiUser;
 use App\Entities\Tweet;
 use App\Repositories\Tweet\TweetRepository;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class TweetControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
+    private Carbon $now;
     private readonly TweetRepository $tweetRepository;
     private readonly UserAssistance $userAssistance;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->now = new Carbon('2024/07/29 12:00:00');
+        Carbon::setTestNow($this->now);
+
         $this->tweetRepository = app()->make(TweetRepository::class);
         $this->userAssistance = app()->make(UserAssistance::class);
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     /**
@@ -130,6 +141,16 @@ class TweetControllerTest extends TestCase
             $this->createReplies($reply, $ownTweet);
         }
 
+        // 更新時間を変更する
+        $x = $tweets->get(1);
+        $x->text = $x->text . '<更新後>';
+        Carbon::setTestNow($this->now->addHour());
+        $this->tweetRepository->save($x);
+        $x = $tweets->get(2);
+        $x->text = $x->text . '<更新後>';
+        Carbon::setTestNow($this->now->addHour());
+        $this->tweetRepository->save($x);
+
         // 実行
         $response = $this->actingAs($me)->get("api/tweets/{$ownTweet->id->value()}/replies");
 
@@ -161,7 +182,7 @@ class TweetControllerTest extends TestCase
         for ($i = 0; $i < $count; $i++) {
             $text = fake()->realText(140);
             $t = $this->createTweet($user, $text);
-            $tweets->put($t->id->value(), $t);
+            $tweets->push($t);
         }
         return $tweets;
     }

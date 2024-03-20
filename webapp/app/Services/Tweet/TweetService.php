@@ -48,7 +48,7 @@ class TweetService
     public function getReplies(Tweet $tweet): Collection
     {
         /** @var Collection<Tweet> $replies */
-        $replies = $this->tweetRepository->findAllReplies($tweet);
+        $replies = $this->tweetRepository->findAllReplies($tweet, order: 'updated_at', by: 'desc');
         $owners = $this->userRepository->findIn(['id' => $replies->pluck('user_id')->all()]);
         $result = collect([]);
         foreach ($replies as $reply) {

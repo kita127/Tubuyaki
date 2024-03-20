@@ -71,15 +71,25 @@ class ElqTweetRepository implements TweetRepository, Modifiable
     /**
      * $tweetのすべての返信を取得する
      * @param Tweet $tweet
+     * @param string $order 並べ替え対象のキー
+     * @param string $by    asc, desc
      * @return Collection<Tweet>
      */
-    public function findAllReplies(Tweet $tweet): Collection
+    public function findAllReplies(Tweet $tweet, string $order = null, string $by = null): Collection
     {
         /** @var Collection<ElqReply> $replyRelations */
         $replyRelations = ElqReply::where('to_tweet_id', $tweet->id->value())->get();
         $replyIdList = $replyRelations->pluck('tweet_id');
+
+        $query = ElqTweet::whereIn('id', $replyIdList->all());
+        if ($order) {
+            if ($by !== 'asc' && $by !== 'desc') {
+                throw new LogicException();
+            }
+            $query = $query->orderBy($order, $by);
+        }
         /** @var Collection<ElqTweet> $replies */
-        $replies = ElqTweet::whereIn('id', $replyIdList->all())->get();
+        $replies = $query->get();
         $entities = $replies->map(fn (ElqTweet $t) => $t->toEntity());
         return $entities;
     }

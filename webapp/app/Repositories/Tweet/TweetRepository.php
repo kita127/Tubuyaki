@@ -34,7 +34,9 @@ interface TweetRepository
     /**
      * $tweetのすべての返信を取得する
      * @param Tweet $tweet
+     * @param string $order 並べ替え対象のキー
+     * @param string $by    asc, desc
      * @return Collection<Tweet>
      */
-    public function findAllReplies(Tweet $tweet): Collection;
+    public function findAllReplies(Tweet $tweet, ?string $order = null, ?string $by = null): Collection;
 }
