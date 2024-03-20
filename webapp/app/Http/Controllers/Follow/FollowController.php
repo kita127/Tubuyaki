@@ -83,6 +83,18 @@ class FollowController extends Controller
         );
     }
 
+    public function getMyFollowers(Request $request): JsonResponse
+    {
+        /** @var TubuyakiUser $user */
+        $user = $request->user();
+        $followers = $this->service->getFollowers($user);
+        return response()->json(
+            [
+                'followers' => $followers->values(),
+            ]
+        );
+    }
+
     /**
      * Store a newly created resource in storage.
      *

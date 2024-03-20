@@ -136,7 +136,7 @@ class FollowControllerTest extends TestCase
     /**
      * FollowController::getMyFollowees
      */
-    public function test05_01_自分がフォローしているフォロワーの一覧を取得する(): void
+    public function test05_01_自分がフォローしているユーザーの一覧を取得する(): void
     {
         // 準備
         /** @var User $me */
@@ -153,6 +153,37 @@ class FollowControllerTest extends TestCase
         $this->assertSame(
             [
                 'followees' => [
+                    [
+                        'id' => $fuga->id->value(),
+                        'account_name' => 'fuga',
+                        'name' => 'ふが次郎',
+                    ],
+                ],
+            ],
+            $response->json()
+        );
+    }
+
+    /**
+     * FollowController::getMyFollowers
+     */
+    public function test06_01_自分をフォローしているユーザーの一覧を取得する(): void
+    {
+        // 準備
+        /** @var User $me */
+        /** @var User $fuga */
+        [$me, $fuga] = $this->createUsers();
+        $this->createFollowingRelation($fuga, $me);
+        $loginUser = new TubuyakiUser($me);
+
+        // 実行
+        $response = $this->actingAs($loginUser)->get("/api/users/me/followers");
+
+        // 検証
+        $response->assertStatus(200);
+        $this->assertSame(
+            [
+                'followers' => [
                     [
                         'id' => $fuga->id->value(),
                         'account_name' => 'fuga',
