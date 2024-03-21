@@ -15,19 +15,7 @@ class Replies implements Arrayable
     {
         $collection = collect([]);
         foreach ($replies as $reply) {
-            /** @var \App\Services\Tweet\Reply $reply */
-            $owner = new User(
-                $reply->owner->id->value(),
-                $reply->owner->accountName(),
-                $reply->owner->name(),
-            );
-            $tweet = new Tweet(
-                $reply->tweet->id->value(),
-                $reply->tweet->text,
-                $reply->tweet->created_at,
-                $reply->tweet->updated_at,
-            );
-            $collection->push(new Reply($owner, $tweet));
+            $collection->push(Reply::create($reply));
         }
         return new Replies($collection);
     }

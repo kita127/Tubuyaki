@@ -2,10 +2,20 @@
 
 namespace App\Http\Responses\Tweet;
 
+use App\Services\TubuyakiUser;
 use Illuminate\Contracts\Support\Arrayable;
 
 class User implements Arrayable
 {
+    public static function create(TubuyakiUser $user): static
+    {
+        return new User(
+            $user->id->value(),
+            $user->accountName(),
+            $user->name(),
+        );
+    }
+
     public function __construct(
         private readonly int $id,
         private readonly string $account_name,
