@@ -7,7 +7,6 @@ use App\Http\Requests\Tweet\TweetRequest;
 use App\Repositories\Tweet\TweetRepository;
 use App\Repositories\User\UserRepository;
 use App\Services\TubuyakiUser;
-use App\Services\Tweet\Reply;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\Tweet\TweetService;
@@ -60,24 +59,7 @@ class TweetController extends Controller
     {
         $tweet = $this->tweetRepo->find($id);
         $replies = $this->service->getReplies($tweet);
-
-        $respReplies = collect([]);
-        foreach ($replies as $reply) {
-            /** @var Reply $reply */
-            $owner = new \App\Http\Responses\Tweet\User(
-                $reply->owner->id->value(),
-                $reply->owner->accountName(),
-                $reply->owner->name(),
-            );
-            $tweet = new \App\Http\Responses\Tweet\Tweet(
-                $reply->tweet->id->value(),
-                $reply->tweet->text,
-                $reply->tweet->created_at,
-                $reply->tweet->updated_at,
-            );
-            $respReplies->push(new \App\Http\Responses\Tweet\Reply($owner, $tweet));
-        }
-        $response = new \App\Http\Responses\Tweet\Replies($respReplies);
+        $response = \App\Http\Responses\Tweet\Replies::create($replies);
         return response()->json(
             [
                 'replies' => $response->toArray()
