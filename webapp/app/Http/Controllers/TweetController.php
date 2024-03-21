@@ -7,6 +7,7 @@ use App\Http\Requests\Tweet\TweetRequest;
 use App\Repositories\Tweet\TweetRepository;
 use App\Repositories\User\UserRepository;
 use App\Services\TubuyakiUser;
+use App\Services\Tweet\Reply;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\Tweet\TweetService;
@@ -59,25 +60,28 @@ class TweetController extends Controller
     {
         $tweet = $this->tweetRepo->find($id);
         $replies = $this->service->getReplies($tweet);
-        // TODO: 流石にレスポンスクラスとかにしよう
-        $response = [
-            'replies' => $replies->map(
-                fn ($v) =>
-                [
-                    'user' => [
-                        'id' => $v['user']->id->value(),
-                        'account_name' => $v['user']->account_name,
-                        'name' => $v['user']->name,
-                    ],
-                    'reply' => [
-                        'id' => $v['reply']->id->value(),
-                        'text' => $v['reply']->text,
-                        'created_at' => $v['reply']->created_at,
-                        'updated_at' => $v['reply']->updated_at,
-                    ],
-                ],
-            ),
-        ];
-        return response()->json($response);
+
+        $respReplies = collect([]);
+        foreach ($replies as $reply) {
+            /** @var Reply $reply */
+            $owner = new \App\Http\Responses\Tweet\User(
+                $reply->owner->id->value(),
+                $reply->owner->accountName(),
+                $reply->owner->name(),
+            );
+            $tweet = new \App\Http\Responses\Tweet\Tweet(
+                $reply->tweet->id->value(),
+                $reply->tweet->text,
+                $reply->tweet->created_at,
+                $reply->tweet->updated_at,
+            );
+            $respReplies->push(new \App\Http\Responses\Tweet\Reply($owner, $tweet));
+        }
+        $response = new \App\Http\Responses\Tweet\Replies($respReplies);
+        return response()->json(
+            [
+                'replies' => $response->toArray()
+            ]
+        );
     }
 }

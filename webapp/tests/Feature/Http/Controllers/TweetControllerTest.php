@@ -160,12 +160,12 @@ class TweetControllerTest extends TestCase
             [
                 'replies' => [
                     [
-                        'user' => [
+                        'owner' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
-                        'reply' => [
+                        'tweet' => [
                             'id' => $thd->id->value(),
                             'text' => $thd->text,
                             'created_at' => $thd->created_at,
@@ -173,12 +173,12 @@ class TweetControllerTest extends TestCase
                         ],
                     ],
                     [
-                        'user' => [
+                        'owner' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
-                        'reply' => [
+                        'tweet' => [
                             'id' => $snd->id->value(),
                             'text' => $snd->text,
                             'created_at' => $snd->created_at,
@@ -186,12 +186,12 @@ class TweetControllerTest extends TestCase
                         ],
                     ],
                     [
-                        'user' => [
+                        'owner' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
-                        'reply' => [
+                        'tweet' => [
                             'id' => $fst->id->value(),
                             'text' => $fst->text,
                             'created_at' => $fst->created_at,
@@ -202,8 +202,6 @@ class TweetControllerTest extends TestCase
             ],
             $content
         );
-        // TODO: データの確認もする
-
     }
 
     private function updateTweetWithTime(Tweet $tweet, Carbon $time): Tweet

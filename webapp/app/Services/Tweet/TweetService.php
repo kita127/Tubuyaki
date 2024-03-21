@@ -43,7 +43,7 @@ class TweetService
 
     /**
      * @param Tweet $tweet
-     * @return Collection<array{user: User, reply: Tweet}>
+     * @return Collection<Reply>
      */
     public function getReplies(Tweet $tweet): Collection
     {
@@ -51,13 +51,11 @@ class TweetService
         $replies = $this->tweetRepository->findAllReplies($tweet, order: 'updated_at', by: 'desc');
         $owners = $this->userRepository->findIn(['id' => $replies->pluck('user_id')->all()]);
         $result = collect([]);
-        foreach ($replies as $reply) {
-            $owner = $owners->get($reply->user_id);
-            $v = [
-                'user' => $owner,
-                'reply' => $reply,
-            ];
-            $result->push($v);
+        /** @var Tweet $tweet */
+        foreach ($replies as $tweet) {
+            $owner = $owners->get($tweet->user_id);
+            $reply = new Reply(new TubuyakiUser($owner), $tweet);
+            $result->push($reply);
         }
         return $result;
     }
