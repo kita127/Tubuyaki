@@ -204,6 +204,43 @@ class TweetControllerTest extends TestCase
         );
     }
 
+    /**
+     * TweetController::reply
+     */
+    public function test05_01_つぶやきに返信する(): void
+    {
+        // 準備
+        $me = $this->userAssistance->createUser();
+        $other = $this->userAssistance->createUsers(1)->first();
+        /** @var Tweet $tweet */
+        $tweet = $this->createTweets($other, 1)->first();
+
+        // 実行
+        $response = $this->actingAs($me)->post(
+            "api/tweets/{$tweet->id->value()}/replies",
+            [
+                'text' => '返信つぶやき',
+            ],
+        );
+
+        // 検証
+        $response->assertStatus(201);
+        $replies = $this->tweetRepository->findAllReplies($tweet);
+        $reply = $replies->first();
+        $this->assertSame(
+            [
+                [
+                    'id' => $reply->id->value(),
+                    'user_id' => $me->id->value(),
+                    'text' => '返信つぶやき',
+                    'created_at' => $reply->created_at,
+                    'updated_at' => $reply->updated_at,
+                ],
+            ],
+            $replies->toArray()
+        );
+    }
+
     private function updateTweetWithTime(Tweet $tweet, Carbon $time): Tweet
     {
         // 何かしら更新しないと更新されないので

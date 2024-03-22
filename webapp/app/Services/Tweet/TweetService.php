@@ -33,12 +33,12 @@ class TweetService
     /**
      * @param TubuyakiUser $user
      * @param string $text
-     * @return void
+     * @return Tweet
      */
-    public function post(TubuyakiUser $user, string $text): void
+    public function post(TubuyakiUser $user, string $text): Tweet
     {
         $tweet = new Tweet(new Unidentified(), $user->id->value(), $text);
-        $this->tweetRepository->save($tweet);
+        return $this->tweetRepository->save($tweet);
     }
 
     /**
@@ -58,5 +58,11 @@ class TweetService
             $result->push($reply);
         }
         return $result;
+    }
+
+    public function reply(Tweet $tweet, TubuyakiUser $user, string $text): void
+    {
+        $reply = $this->post($user, $text);
+        $this->tweetRepository->reply($reply, $tweet);
     }
 }

@@ -66,4 +66,13 @@ class TweetController extends Controller
             ]
         );
     }
+
+    public function reply(TweetRequest $request, int $id): Response
+    {
+        $user = $request->user();
+        $tweet = $this->tweetRepo->find($id);
+        $text = $request->input('text');
+        $this->service->reply($tweet, $user, $text);
+        return response('', ResponseStatus::CREATED);
+    }
 }

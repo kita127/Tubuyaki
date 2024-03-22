@@ -38,5 +38,6 @@ interface TweetRepository
      * @param string $by    asc, desc
      * @return Collection<Tweet>
      */
+    // TODO: デフォルトで更新時間の降順にしたい
     public function findAllReplies(Tweet $tweet, ?string $order = null, ?string $by = null): Collection;
 }
