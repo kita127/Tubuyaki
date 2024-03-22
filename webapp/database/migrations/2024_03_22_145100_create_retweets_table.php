@@ -13,10 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tweet_details', function (Blueprint $table) {
+        Schema::create('retweets', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tweet_id')->references('id')->on('tweets')->cascadeOnDelete();
-            $table->text('text');
+            $table->foreignId('target_id')->references('id')->on('tweets');
             $table->timestamps();
         });
     }
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tweet_details');
+        Schema::dropIfExists('retweets');
     }
 };
