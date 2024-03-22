@@ -70,6 +70,7 @@ class ElqTweetRepository implements TweetRepository, Modifiable
 
     /**
      * $tweetのすべての返信を取得する
+     * デフォルトでは更新時間の降順で返される
      * @param Tweet $tweet
      * @param string $order 並べ替え対象のキー
      * @param string $by    asc, desc
@@ -87,6 +88,9 @@ class ElqTweetRepository implements TweetRepository, Modifiable
                 throw new LogicException();
             }
             $query = $query->orderBy($order, $by);
+        } else {
+            // デフォルトは更新時間の降順
+            $query = $query->orderBy('updated_at', 'desc');
         }
         /** @var Collection<ElqTweet> $replies */
         $replies = $query->get();
