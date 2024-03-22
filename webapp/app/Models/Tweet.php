@@ -13,14 +13,21 @@ class Tweet extends BaseModel
     protected $fillable = [
         'user_id',
         'text',
+        'created_at',
+        'updated_at',
     ];
+
+    public function tweetDetail()
+    {
+        return $this->hasOne(TweetDetail::class);
+    }
 
     public function toEntity(): Entity
     {
         return new \App\Entities\Tweet(
             id: new Identified($this->id),
             user_id: $this->user_id,
-            text: $this->text,
+            text: $this->tweetDetail->text,
             created_at: $this->created_at,
             updated_at: $this->updated_at,
         );

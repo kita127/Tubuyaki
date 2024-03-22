@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use LogicException;
 use App\Entities\Entity;
 use App\Models\Reply as ElqReply;
+use App\Models\TweetDetail as ElqTweetDetail;
 
 class ElqTweetRepository implements TweetRepository, Modifiable
 {
@@ -105,9 +106,11 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         }
         $elqTweet = new ElqTweet([
             'user_id' => $tweet->user_id,
-            'text' => $tweet->text,
         ]);
         $elqTweet->save();
+        $elqTweetDetail = new ElqTweetDetail();
+        $elqTweetDetail->text = $tweet->text;
+        $elqTweet->tweetDetail()->save($elqTweetDetail);
         return $elqTweet->toEntity();
     }
 
@@ -118,8 +121,12 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         }
         /** @var ElqTweet $elqTweet */
         $elqTweet = ElqTweet::findOrFail($tweet->id->value());
-        $elqTweet->user_id = $tweet->user_id;
-        $elqTweet->text = $tweet->text;
+        $elqTweet->tweetDetail->text = $tweet->text;
+        $elqTweet->tweetDetail->save();
+        $elqTweet->created_at = $elqTweet->tweetDetail->created_at > $elqTweet->created_at
+            ? $elqTweet->tweetDetail->created_at : $elqTweet->created_at;
+        $elqTweet->updated_at = $elqTweet->tweetDetail->updated_at > $elqTweet->updated_at
+            ? $elqTweet->tweetDetail->updated_at : $elqTweet->updated_at;
         $elqTweet->save();
         return $elqTweet->toEntity();
     }
