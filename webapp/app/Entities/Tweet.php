@@ -15,4 +15,11 @@ class Tweet extends Entity
         public readonly ?string $updated_at = null,
     ) {
     }
+
+    public function toArray(): array
+    {
+        $array = parent::toArray();
+        $array['type'] = $this->type->value;
+        return $array;
+    }
 }

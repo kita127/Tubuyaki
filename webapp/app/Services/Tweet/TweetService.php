@@ -7,6 +7,7 @@ use App\Repositories\Tweet\TweetRepository;
 use App\Services\TubuyakiUser;
 use Illuminate\Support\Collection;
 use App\Entities\Tweet;
+use App\Entities\TweetType;
 use App\Repositories\User\UserRepository;
 
 class TweetService
@@ -35,9 +36,9 @@ class TweetService
      * @param string $text
      * @return Tweet
      */
-    public function post(TubuyakiUser $user, string $text): Tweet
+    public function post(TubuyakiUser $user, string $text, TweetType $tweetType): Tweet
     {
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), $text);
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), $tweetType, $text);
         return $this->tweetRepository->save($tweet);
     }
 
@@ -62,7 +63,7 @@ class TweetService
 
     public function reply(Tweet $tweet, TubuyakiUser $user, string $text): void
     {
-        $reply = $this->post($user, $text);
+        $reply = $this->post($user, $text, TweetType::Reply);
         $this->tweetRepository->reply($reply, $tweet);
     }
 }

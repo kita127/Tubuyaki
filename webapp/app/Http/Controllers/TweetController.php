@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Entities\TweetType;
 use App\Http\Constant\ResponseStatus;
 use App\Http\Requests\Tweet\TweetRequest;
 use App\Repositories\Tweet\TweetRepository;
@@ -51,7 +52,7 @@ class TweetController extends Controller
         /** @var TubuyakiUser $user */
         $user = $request->user();
         $text = $request->input('text');
-        $this->service->post($user, $text);
+        $this->service->post($user, $text, TweetType::Normal);
         return response('', ResponseStatus::CREATED);
     }
 

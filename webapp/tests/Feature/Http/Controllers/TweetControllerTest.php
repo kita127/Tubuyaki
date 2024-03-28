@@ -119,6 +119,7 @@ class TweetControllerTest extends TestCase
                 [
                     'id' => $tweets->first()->id->value(),
                     'user_id' => $me->id->value(),
+                    'type' => 'normal',
                     'text' => '新規ツイート',
                     'created_at' => $tweets->first()->created_at,
                     'updated_at' => $tweets->first()->updated_at,
@@ -233,6 +234,7 @@ class TweetControllerTest extends TestCase
                 [
                     'id' => $reply->id->value(),
                     'user_id' => $me->id->value(),
+                    'type' => 'reply',
                     'text' => '返信つぶやき',
                     'created_at' => $reply->created_at,
                     'updated_at' => $reply->updated_at,
