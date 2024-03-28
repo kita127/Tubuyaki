@@ -13,6 +13,7 @@ use LogicException;
 use App\Entities\Entity;
 use App\Models\Reply as ElqReply;
 use App\Models\TweetDetail as ElqTweetDetail;
+use App\Models\TweetType as ElqTweetType;
 
 class ElqTweetRepository implements TweetRepository, Modifiable
 {
@@ -109,6 +110,8 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         ]);
         $elqTweet->save();
         $elqTweetDetail = new ElqTweetDetail();
+        $type = ElqTweetType::where('value', '=', $tweet->type->value)->firstOrFail();
+        $elqTweetDetail->tweet_type_id = $type->id;
         $elqTweetDetail->text = $tweet->text;
         $elqTweet->tweetDetail()->save($elqTweetDetail);
         return $elqTweet->toEntity();

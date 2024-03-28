@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Lib\UserAssistance;
 use App\Services\TubuyakiUser;
 use App\Entities\Tweet;
+use App\Entities\TweetType;
 use App\Repositories\Tweet\TweetRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -241,6 +242,23 @@ class TweetControllerTest extends TestCase
         );
     }
 
+    /**
+     * TweetController::retweet
+     */
+    public function test06_01_つぶやきにリツイートする(): void
+    {
+        // 準備
+        $me = $this->userAssistance->createUser();
+        $other = $this->userAssistance->createUsers(1)->first();
+        /** @var Tweet $tweet */
+        $tweet = $this->createTweets($other, 1)->first();
+
+        // 実行
+        $response = $this->actingAs($me)->post("api/tweets/{$tweet->id->value()}/retweet", []);
+
+        // 検証
+    }
+
     private function updateTweetWithTime(Tweet $tweet, Carbon $time): Tweet
     {
         // 何かしら更新しないと更新されないので
@@ -251,7 +269,7 @@ class TweetControllerTest extends TestCase
 
     private function createTweet(TubuyakiUser $user, string $content): Tweet
     {
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), $content);
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), TweetType::Normal, $content);
         return $this->tweetRepository->save($tweet);
     }
 

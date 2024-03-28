@@ -13,7 +13,7 @@ init:
 	docker compose exec apache php artisan key:generate
 	docker compose exec apache npm install
 	docker compose exec apache php artisan migrate --seed
-	docker compose exec apache php artisan migrate --env=testing
+	docker compose exec apache php artisan migrate --env=testing --seed
 
 #== terminate
 down:
@@ -26,4 +26,4 @@ test:
 #== Re migrate
 migrate:
 	docker compose exec apache php artisan migrate:fresh --seed
-	docker compose exec apache php artisan migrate:fresh --env=testing
+	docker compose exec apache php artisan migrate:fresh --env=testing --seed

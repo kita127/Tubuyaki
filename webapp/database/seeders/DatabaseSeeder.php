@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Exception;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,9 +22,18 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        $this->call([
-            UserSeeder::class,
-            UserDetailSeeder::class,
-        ]);
+        if (app()->isLocal()) {
+            $this->call([
+                UserSeeder::class,
+                UserDetailSeeder::class,
+                TweetTypeSeeder::class,
+            ]);
+        } elseif (app()->runningUnitTests()) {
+            $this->call([
+                TweetTypeSeeder::class,
+            ]);
+        } else {
+            throw new Exception('意図しない環境です');
+        }
     }
 }
