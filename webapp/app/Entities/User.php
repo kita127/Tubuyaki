@@ -25,4 +25,14 @@ class User extends Entity
     {
         return 'remember_token';
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id->value(),
+            'account_name' => $this->account_name,
+            'name' => $this->name,
+            'email' => $this->email,
+        ];
+    }
 }

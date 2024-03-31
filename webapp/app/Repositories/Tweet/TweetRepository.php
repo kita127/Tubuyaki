@@ -3,6 +3,7 @@
 namespace App\Repositories\Tweet;
 
 use App\Entities\Tweet;
+use App\Entities\User;
 use Illuminate\Support\Collection;
 
 interface TweetRepository
@@ -33,11 +34,25 @@ interface TweetRepository
 
     /**
      * $tweetのすべての返信を取得する
+     * デフォルトでは更新時間の降順で返される
      * @param Tweet $tweet
      * @param string $order 並べ替え対象のキー
      * @param string $by    asc, desc
      * @return Collection<Tweet>
      */
-    // TODO: デフォルトで更新時間の降順にしたい
     public function findAllReplies(Tweet $tweet, ?string $order = null, ?string $by = null): Collection;
+
+    /**
+     * $tweetをリツイートしたユーザーの一覧を取得する
+     * デフォルトではリツイートした時間の降順で取得する
+     * @param Tweet $tweet
+     * @return Collection<User>
+     */
+    public function findRetweetUsers(Tweet $tweet): Collection;
+
+    /**
+     * @param Tweet $tweet  リツイートするツイート
+     * @param User $user    リツイートするユーザー
+     */
+    public function retweet(Tweet $tweet, User $user): void;
 }

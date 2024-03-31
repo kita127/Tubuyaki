@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Entities\Entity;
 use App\Entities\Identifiable\Identified;
 use App\Entities\TweetType;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Tweet extends BaseModel
 {
@@ -17,6 +18,11 @@ class Tweet extends BaseModel
         'created_at',
         'updated_at',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function tweetDetail()
     {

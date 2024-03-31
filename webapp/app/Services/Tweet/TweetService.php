@@ -66,4 +66,9 @@ class TweetService
         $reply = $this->post($user, $text, TweetType::Reply);
         $this->tweetRepository->reply($reply, $tweet);
     }
+
+    public function retweet(Tweet $tweet, TubuyakiUser $user): void
+    {
+        $this->tweetRepository->retweet($tweet, $user->getEntity());
+    }
 }

@@ -44,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::get('/', [TweetController::class, 'getReplies']);
                 Route::post('/', [TweetController::class, 'reply']);
             });
+            Route::post('/retweet', [TweetController::class, 'retweet']);
         })->whereNumber('id');
     });
 });

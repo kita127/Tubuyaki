@@ -76,4 +76,12 @@ class TweetController extends Controller
         $this->service->reply($tweet, $user, $text);
         return response('', ResponseStatus::CREATED);
     }
+
+    public function retweet(Request $request, int $id): Response
+    {
+        $user = $request->user();
+        $tweet = $this->tweetRepo->find($id);
+        $this->service->retweet($tweet, $user);
+        return response('', ResponseStatus::CREATED);
+    }
 }

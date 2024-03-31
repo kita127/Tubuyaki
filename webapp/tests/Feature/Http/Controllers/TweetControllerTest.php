@@ -252,13 +252,27 @@ class TweetControllerTest extends TestCase
         // 準備
         $me = $this->userAssistance->createUser();
         $other = $this->userAssistance->createUsers(1)->first();
-        /** @var Tweet $tweet */
-        $tweet = $this->createTweets($other, 1)->first();
+        /** @var Tweet $othersTweet */
+        $othersTweet = $this->createTweets($other, 1)->first();
 
         // 実行
-        $response = $this->actingAs($me)->post("api/tweets/{$tweet->id->value()}/retweet", []);
+        $response = $this->actingAs($me)->post("api/tweets/{$othersTweet->id->value()}/retweet", []);
 
         // 検証
+        // TODO: リツイートした時間の降順で取得できることを確認する
+        $response->assertStatus(201);
+        $users = $this->tweetRepository->findRetweetUsers($othersTweet);
+        $this->assertSame(
+            [
+                [
+                    'id' => $me->id->value(),
+                    'account_name' => $me->accountName(),
+                    'name' => $me->name(),
+                    'email' => 'test@example.net',
+                ],
+            ],
+            $users->toArray()
+        );
     }
 
     private function updateTweetWithTime(Tweet $tweet, Carbon $time): Tweet

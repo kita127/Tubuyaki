@@ -11,9 +11,14 @@ use App\Models\Tweet as ElqTweet;
 use Illuminate\Support\Collection;
 use LogicException;
 use App\Entities\Entity;
+use App\Entities\Identifiable\Unidentified;
+use App\Entities\TweetType;
 use App\Models\Reply as ElqReply;
 use App\Models\TweetDetail as ElqTweetDetail;
 use App\Models\TweetType as ElqTweetType;
+use App\Models\Retweet as ElqRetweet;
+use App\Models\User as ElqUser;
+use App\Entities\User;
 
 class ElqTweetRepository implements TweetRepository, Modifiable
 {
@@ -98,6 +103,35 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         $replies = $query->get();
         $entities = $replies->map(fn (ElqTweet $t) => $t->toEntity());
         return $entities;
+    }
+
+    /**
+     * $tweetをリツイートしたユーザーの一覧を取得する
+     * デフォルトではリツイートした時間の降順で取得する
+     * @param Tweet $tweet
+     * @return Collection<User>
+     */
+    public function findRetweetUsers(Tweet $tweet): Collection
+    {
+        $retweetRelations = ElqRetweet::where('target_id', '=', $tweet->id->value())
+            ->orderByDesc('created_at')->get();
+        $retweetIdList = $retweetRelations->pluck('tweet_id');
+        $retweets = ElqTweet::whereIn('id', $retweetIdList->toArray())->get();
+        $users = ElqUser::whereIn('id', $retweets->pluck('user_id')->all())->get();
+        return $users->map(fn (ElqUser $u) => $u->toEntity());
+    }
+
+    /**
+     * @param Tweet $tweet  リツイートするツイート
+     * @param User $user    リツイートするユーザー
+     */
+    public function retweet(Tweet $tweet, User $user): void
+    {
+        $myTweet = new Tweet(new Unidentified(), $user->id->value(), TweetType::Retweet, '');
+        /** @var Tweet $myTweet */
+        $myTweet = $this->create($myTweet);
+        $relation = new ElqRetweet(['tweet_id' => $myTweet->id->value(), 'target_id' => $tweet->id->value()]);
+        $relation->save();
     }
 
     public function create(Entity $tweet): Entity
