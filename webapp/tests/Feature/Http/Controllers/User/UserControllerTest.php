@@ -66,8 +66,6 @@ class UserControllerTest extends TestCase
                 'account_name' => 'newUser',
                 'name' => '新規追加',
                 'email' => 'test@example.com',
-                'password' => $entity->password,
-                'remember_token' => null,
             ],
             $entity->toArray()
         );

@@ -7,11 +7,14 @@ use App\Repositories\Tweet\TweetRepository;
 use App\Services\TubuyakiUser;
 use Illuminate\Support\Collection;
 use App\Entities\Tweet;
+use App\Entities\TweetType;
+use App\Repositories\User\UserRepository;
 
 class TweetService
 {
     public function __construct(
         private readonly TweetRepository $tweetRepository,
+        private readonly UserRepository $userRepository,
     ) {
     }
     /**
@@ -31,11 +34,41 @@ class TweetService
     /**
      * @param TubuyakiUser $user
      * @param string $text
-     * @return void
+     * @return Tweet
      */
-    public function post(TubuyakiUser $user, string $text): void
+    public function post(TubuyakiUser $user, string $text, TweetType $tweetType): Tweet
     {
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), $text);
-        $this->tweetRepository->save($tweet);
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), $tweetType, $text);
+        return $this->tweetRepository->save($tweet);
+    }
+
+    /**
+     * @param Tweet $tweet
+     * @return Collection<Reply>
+     */
+    public function getReplies(Tweet $tweet): Collection
+    {
+        /** @var Collection<Tweet> $replies */
+        $replies = $this->tweetRepository->findAllReplies($tweet);
+        $owners = $this->userRepository->findIn(['id' => $replies->pluck('user_id')->all()]);
+        $result = collect([]);
+        /** @var Tweet $tweet */
+        foreach ($replies as $tweet) {
+            $owner = $owners->get($tweet->user_id);
+            $reply = new Reply(new TubuyakiUser($owner), $tweet);
+            $result->push($reply);
+        }
+        return $result;
+    }
+
+    public function reply(Tweet $tweet, TubuyakiUser $user, string $text): void
+    {
+        $reply = $this->post($user, $text, TweetType::Reply);
+        $this->tweetRepository->reply($reply, $tweet);
+    }
+
+    public function retweet(Tweet $tweet, TubuyakiUser $user): void
+    {
+        $this->tweetRepository->retweet($tweet, $user->getEntity());
     }
 }

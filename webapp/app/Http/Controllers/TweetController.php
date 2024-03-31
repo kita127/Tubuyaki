@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Entities\TweetType;
 use App\Http\Constant\ResponseStatus;
 use App\Http\Requests\Tweet\TweetRequest;
+use App\Repositories\Tweet\TweetRepository;
 use App\Repositories\User\UserRepository;
 use App\Services\TubuyakiUser;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +17,7 @@ class TweetController extends Controller
 {
     public function __construct(
         private readonly TweetService $service,
+        private readonly TweetRepository $tweetRepo,
         private readonly UserRepository $userRepo,
     ) {
     }
@@ -49,7 +52,36 @@ class TweetController extends Controller
         /** @var TubuyakiUser $user */
         $user = $request->user();
         $text = $request->input('text');
-        $this->service->post($user, $text);
+        $this->service->post($user, $text, TweetType::Normal);
+        return response('', ResponseStatus::CREATED);
+    }
+
+    public function getReplies(int $id): JsonResponse
+    {
+        $tweet = $this->tweetRepo->find($id);
+        $replies = $this->service->getReplies($tweet);
+        $response = \App\Http\Responses\Tweet\Replies::create($replies);
+        return response()->json(
+            [
+                'replies' => $response->toArray()
+            ]
+        );
+    }
+
+    public function reply(TweetRequest $request, int $id): Response
+    {
+        $user = $request->user();
+        $tweet = $this->tweetRepo->find($id);
+        $text = $request->input('text');
+        $this->service->reply($tweet, $user, $text);
+        return response('', ResponseStatus::CREATED);
+    }
+
+    public function retweet(Request $request, int $id): Response
+    {
+        $user = $request->user();
+        $tweet = $this->tweetRepo->find($id);
+        $this->service->retweet($tweet, $user);
         return response('', ResponseStatus::CREATED);
     }
 }
