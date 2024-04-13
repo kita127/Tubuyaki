@@ -100,6 +100,15 @@ class MockUserRepository implements UserRepository
 
     /**
      * @param User $user
+     * @return Collection<int, User>
+     */
+    public function findFollowees(User $user): never
+    {
+        throw new NotImplementedException();
+    }
+
+    /**
+     * @param User $user
      * @param array<string, mixed> $where
      * @return bool
      */

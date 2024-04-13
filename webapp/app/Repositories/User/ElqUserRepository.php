@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Collection;
 use LogicException;
 use App\Repositories\Eloquent\ElqCommonRepository;
+use App\Models\Follower as ElqFollower;
 
 class ElqUserRepository implements UserRepository, Modifiable
 {
@@ -102,6 +103,17 @@ class ElqUserRepository implements UserRepository, Modifiable
     public function findIn(array $whereIn): Collection
     {
         return $this->commonRepo->findIn(($whereIn));
+    }
+
+    /**
+     * @param User $user
+     * @return Collection<int, User>
+     */
+    public function findFollowees(User $user): Collection
+    {
+        /** @var Collection<int> $relations */
+        $relations = ElqFollower::where('user_id', '=', $user->id->value())->get();
+        return $this->findIn(['id' => $relations->pluck('followee_id')->all()]);
     }
 
     /**
