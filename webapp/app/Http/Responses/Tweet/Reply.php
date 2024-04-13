@@ -9,7 +9,7 @@ class Reply implements Arrayable
     public static function create(\App\Services\Tweet\Reply $reply): static
     {
         $owner = User::create($reply->owner);
-        $tweet = Tweet::create($reply->tweet);
+        $tweet = Tweet::create(new \App\Services\Tweet\Tweet($reply->owner, $reply->tweet));
         return new Reply($owner, $tweet);
     }
 
@@ -21,9 +21,6 @@ class Reply implements Arrayable
 
     public function toArray(): array
     {
-        return [
-            'owner' => $this->owner->toArray(),
-            'tweet' => $this->tweet->toArray(),
-        ];
+        return $this->tweet->toArray();
     }
 }

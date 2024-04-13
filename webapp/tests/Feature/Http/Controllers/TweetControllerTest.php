@@ -162,43 +162,37 @@ class TweetControllerTest extends TestCase
             [
                 'replies' => [
                     [
-                        'owner' => [
+                        'id' => $thd->id->value(),
+                        'text' => $thd->text,
+                        'user' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
-                        'tweet' => [
-                            'id' => $thd->id->value(),
-                            'text' => $thd->text,
-                            'created_at' => $thd->created_at,
-                            'updated_at' => $thd->updated_at,
-                        ],
+                        'created_at' => $thd->created_at,
+                        'updated_at' => $thd->updated_at,
                     ],
                     [
-                        'owner' => [
+                        'id' => $snd->id->value(),
+                        'text' => $snd->text,
+                        'user' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
-                        'tweet' => [
-                            'id' => $snd->id->value(),
-                            'text' => $snd->text,
-                            'created_at' => $snd->created_at,
-                            'updated_at' => $snd->updated_at,
-                        ],
+                        'created_at' => $snd->created_at,
+                        'updated_at' => $snd->updated_at,
                     ],
                     [
-                        'owner' => [
+                        'id' => $fst->id->value(),
+                        'text' => $fst->text,
+                        'user' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
-                        'tweet' => [
-                            'id' => $fst->id->value(),
-                            'text' => $fst->text,
-                            'created_at' => $fst->created_at,
-                            'updated_at' => $fst->updated_at,
-                        ],
+                        'created_at' => $fst->created_at,
+                        'updated_at' => $fst->updated_at,
                     ],
                 ],
             ],
