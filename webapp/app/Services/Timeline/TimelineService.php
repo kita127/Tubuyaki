@@ -5,6 +5,7 @@ namespace App\Services\Timeline;
 use App\Repositories\Tweet\TweetRepository;
 use App\Repositories\User\UserRepository;
 use App\Services\TubuyakiUser;
+use App\Services\Tweet\Tweet;
 
 class TimelineService
 {
@@ -17,13 +18,21 @@ class TimelineService
     public function getTimeline(TubuyakiUser $user): TimelineContents
     {
         // 自分のつぶやきを取得する
-        $myTweets = $this->tweetRepository->findAllBy(['user_id' => $user->id->value()]);
+        $entities = $this->tweetRepository->findAllBy(['user_id' => $user->id->value()]);
+        $myTweets = collect([]);
+        foreach ($entities as $entity) {
+            $myTweets->push(new Tweet($user, $entity));
+        }
+
         // 自分のフォロイーのつぶやきを取得する
         $followees = $this->userRepository->findFollowees($user->getEntity());
         $followeeTweets = collect([]);
         foreach ($followees as $followee) {
-            $tweets = $this->tweetRepository->findAllBy(['user_id' => $followee->id->value()]);
-            $followeeTweets->push($tweets);
+            $entities = $this->tweetRepository->findAllBy(['user_id' => $followee->id->value()]);
+            foreach ($entities as $entity) {
+                $user = new TubuyakiUser($followee);
+                $followeeTweets->push(new Tweet($user, $entity));
+            }
         }
         return new TimelineContents($myTweets, $followeeTweets);
     }

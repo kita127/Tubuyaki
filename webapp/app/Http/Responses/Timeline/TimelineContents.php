@@ -5,11 +5,10 @@ namespace App\Http\Responses\Timeline;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use App\Http\Responses\Tweet\Tweet;
-use App\Services\Timeline\TimelineContents as Contents;
 
 class TimelineContents implements Arrayable
 {
-    public static function create(Contents $contents): static
+    public static function create(\App\Services\Timeline\TimelineContents $contents): static
     {
         $tweets = collect([]);
         foreach ($contents->myTweets as $t) {
@@ -35,6 +34,6 @@ class TimelineContents implements Arrayable
 
     public function toArray(): array
     {
-        return $this->tweets->map(fn (Tweet $t) => $t->toArray())->toArray();
+        return ['tweets' => $this->tweets->map(fn (Tweet $t) => $t->toArray())->toArray()];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services\Timeline;
 
+use App\Services\Tweet\Tweet;
 use Illuminate\Support\Collection;
 
 class TimelineContents
