@@ -3,6 +3,7 @@
 namespace App\Http\Responses\Tweet;
 
 use Illuminate\Contracts\Support\Arrayable;
+use App\Http\Responses\User;
 
 class Tweet implements Arrayable
 {

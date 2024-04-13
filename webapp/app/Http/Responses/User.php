@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Responses\Tweet;
+namespace App\Http\Responses;
 
 use App\Services\TubuyakiUser;
 use Illuminate\Contracts\Support\Arrayable;
 
-// TODO: namespaceの場所微妙なので変える
 class User implements Arrayable
 {
     public static function create(TubuyakiUser $user): static

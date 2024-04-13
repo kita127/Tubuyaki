@@ -2,6 +2,7 @@
 
 namespace App\Http\Responses\Tweet;
 
+use App\Http\Responses\User;
 use Illuminate\Contracts\Support\Arrayable;
 
 class Reply implements Arrayable
