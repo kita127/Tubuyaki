@@ -5,6 +5,7 @@ namespace Tests\Feature\Http\Controllers;
 use App\Entities\Identifiable\Unidentified;
 use App\Entities\Tweet;
 use App\Entities\TweetType;
+use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\Tweet\TweetRepository;
 use App\Services\TubuyakiUser;
 use Tests\Lib\UserAssistance;
@@ -17,6 +18,7 @@ class TimelineControllerTest extends TestCase
 
     private readonly UserAssistance $userAssistance;
     private readonly TweetRepository $tweetRepository;
+    private readonly FollowerRepository $followerRepository;
 
     protected function setUp(): void
     {
@@ -24,6 +26,7 @@ class TimelineControllerTest extends TestCase
 
         $this->userAssistance = app()->make(UserAssistance::class);
         $this->tweetRepository = app()->make(TweetRepository::class);
+        $this->followerRepository = app()->make(FollowerRepository::class);
     }
 
     /**
@@ -34,15 +37,52 @@ class TimelineControllerTest extends TestCase
     public function test01_01_タイムラインを取得する(): void
     {
         // 準備
-        $user = $this->userAssistance->createUser();
-        $tweet = $this->createTweet($user, 'つぶやきの内容');
+        $users = $this->userAssistance->createUsers(2);
+        /** @var TubuyakiUser $user1 */
+        $user1 = $users->shift();
+        $user2 = $users->shift();
+        $user1Tweet = $this->createTweet($user1, 'ユーザ1のつぶやき');
+        $user2Tweet = $this->createTweet($user2, 'ユーザ2のつぶやき');
+        $user1->follow($user2, $this->followerRepository);
 
         // 実行
-        $response = $this->actingAs($user)->get("api/users/{$user->id->value()}/timeline");
+        $response = $this->actingAs($user1)->get("api/users/{$user1->id->value()}/timeline");
 
         // 検証
         $response->assertStatus(200);
-        $this->assertSame([], $response->json());
+        $this->assertSame(
+            [
+                'contents' => [
+                    'tweets' => [
+                        [
+                            'id' => $user1Tweet->id->value(),
+                            'text' => 'ユーザ1のつぶやき',
+                            'tweet_type' => 'normal',
+                            'user' => [
+                                'id' => $user1->id->value(),
+                                'account_name' => $user1->accountName(),
+                                'name' => $user1->name(),
+                            ],
+                            'created_at' => $user1Tweet->created_at,
+                            'updated_at' => $user1Tweet->updated_at,
+                        ],
+                        [
+                            'id' => $user2Tweet->id->value(),
+                            'text' => 'ユーザ2のつぶやき',
+                            'tweet_type' => 'normal',
+                            'user' => [
+                                'id' => $user2->id->value(),
+                                'account_name' => $user2->accountName(),
+                                'name' => $user2->name(),
+                            ],
+                            'created_at' => $user2Tweet->created_at,
+                            'updated_at' => $user2Tweet->updated_at,
+                        ],
+                    ],
+                ],
+            ],
+            $response->json()
+        );
     }
 
     private function createTweet(TubuyakiUser $user, string $content): Tweet

@@ -15,11 +15,9 @@ class TimelineContents implements Arrayable
             $x = Tweet::create($t);
             $tweets->push($x);
         }
-        foreach ($contents->followeeTweets as $ts) {
-            foreach ($ts as $t) {
-                $x = Tweet::create($t);
-                $tweets->push($x);
-            }
+        foreach ($contents->followeeTweets as $tweet) {
+            $x = Tweet::create($tweet);
+            $tweets->push($x);
         }
         return new static($tweets);
     }

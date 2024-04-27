@@ -46,6 +46,7 @@ class FollowService
 
     public function follow(TubuyakiUser $me, User $target): void
     {
+        // TODO: TubuyakiUserでフォローする
         $followRelation = new Follower(new Unidentified(), $me->id->value(), $target->id->value());
         $this->followerRepository->save($followRelation);
     }
