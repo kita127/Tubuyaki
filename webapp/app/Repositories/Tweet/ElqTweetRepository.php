@@ -87,7 +87,7 @@ class ElqTweetRepository implements TweetRepository, Modifiable
      * @param array<string, array> $whereIn
      * @param ?int $offset
      * @param ?int $limit
-     * @param ?string $orderBy
+     * @param ?array<string> $orderBy
      * @param string $direction
      * @return Collection<int, Tweet>    key:ID
      */
@@ -95,7 +95,7 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         array $whereIn,
         ?int $offset = null,
         ?int $limit = null,
-        ?string $orderBy = null,
+        ?array $orderBy = null,
         string $direction = 'asc'
     ): Collection {
         $keys = array_keys($whereIn);
@@ -121,7 +121,9 @@ class ElqTweetRepository implements TweetRepository, Modifiable
             if ($direction !== 'asc' && $direction !== 'desc') {
                 new LogicException('Direction must be asc or desc.');
             }
-            $query->orderBy($orderBy, $direction);
+            foreach ($orderBy as $col) {
+                $query->orderBy($col, $direction);
+            }
         }
         /** @var Collection<BaseModel> $models */
         $models = $query->get();

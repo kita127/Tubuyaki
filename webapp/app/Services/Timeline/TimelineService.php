@@ -28,7 +28,7 @@ class TimelineService
             ['user_id' => array_keys($targetUserMap)],
             $index,
             $count + 1,
-            'updated_at',
+            ['updated_at', 'id'],
             'desc',
         );
         if ($tweetEntities->count() > $count) {
