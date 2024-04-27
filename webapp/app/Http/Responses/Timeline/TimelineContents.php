@@ -11,7 +11,7 @@ class TimelineContents implements Arrayable
     public static function create(\App\Services\Timeline\TimelineContents $contents): static
     {
         $tweets = collect([]);
-        foreach ($contents->mergeTweets() as $tweet) {
+        foreach ($contents->tweets as $tweet) {
             $x = Tweet::create($tweet);
             $tweets->push($x);
         }
@@ -23,7 +23,7 @@ class TimelineContents implements Arrayable
      */
     public function __construct(
         private readonly Collection $tweets,
-        private readonly int $nextIndex,
+        private readonly ?int $nextIndex,
     ) {
     }
 

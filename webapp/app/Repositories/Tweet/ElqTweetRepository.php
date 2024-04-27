@@ -84,6 +84,56 @@ class ElqTweetRepository implements TweetRepository, Modifiable
     }
 
     /**
+     * @param array<string, array> $whereIn
+     * @param ?int $offset
+     * @param ?int $limit
+     * @param ?string $orderBy
+     * @param string $direction
+     * @return Collection<int, Tweet>    key:ID
+     */
+    public function findIn(
+        array $whereIn,
+        ?int $offset = null,
+        ?int $limit = null,
+        ?string $orderBy = null,
+        string $direction = 'asc'
+    ): Collection {
+        $keys = array_keys($whereIn);
+        if (count($keys) !== 1) {
+            throw new LogicException();
+        }
+        $values = array_values($whereIn);
+        if (count($values) !== 1) {
+            throw new LogicException();
+        }
+        if (!is_array($values[0])) {
+            throw new LogicException();
+        }
+        $query = $this->model->query()->whereIn($keys[0], $values[0]);
+
+        if ($offset) {
+            $query->skip($offset);
+        }
+        if ($limit) {
+            $query->take($limit);
+        }
+        if ($orderBy) {
+            if ($direction !== 'asc' && $direction !== 'desc') {
+                new LogicException('Direction must be asc or desc.');
+            }
+            $query->orderBy($orderBy, $direction);
+        }
+        /** @var Collection<BaseModel> $models */
+        $models = $query->get();
+        $result = collect([]);
+        foreach ($models as $model) {
+            $result->put($model->id, $model->toEntity());
+        }
+        return $result;
+    }
+
+
+    /**
      * @param Tweet $reply  返信つぶやき
      * @param Tweet $toTweet 返信対象のつぶやき
      */
