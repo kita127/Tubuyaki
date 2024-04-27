@@ -9,6 +9,7 @@ use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\Tweet\TweetRepository;
 use App\Services\TubuyakiUser;
 use Carbon\Carbon;
+use Faker\Factory;
 use Tests\Lib\UserAssistance;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -97,6 +98,11 @@ class TimelineControllerTest extends TestCase
         );
     }
 
+    /**
+     * TimelineController::getTimeline
+     *
+     * @return void
+     */
     public function test01_02_タイムラインは新しいものから順に取得する(): void
     {
         // 準備
@@ -107,13 +113,13 @@ class TimelineControllerTest extends TestCase
         $user1->follow($user2, $this->followerRepository);  // user2をフォローする
 
         $now = Carbon::now();
-        $user1Tweet1 = $this->createTweet($user1, '4: 自分のつぶやき1');
+        $this->createTweet($user1, '4: 自分のつぶやき1');
         TimeUtil::addTheDate(1, $now);
-        $user2Tweet1 = $this->createTweet($user2, '3: ユーザー2のつぶやき1');
+        $this->createTweet($user2, '3: ユーザー2のつぶやき1');
         TimeUtil::addTheDate(2, $now);
-        $user2Tweet2 = $this->createTweet($user2, '2: ユーザー2のつぶやき2');
+        $this->createTweet($user2, '2: ユーザー2のつぶやき2');
         TimeUtil::addTheDate(3, $now);
-        $user1Tweet2 = $this->createTweet($user1, '1: 自分のつぶやき2');
+        $this->createTweet($user1, '1: 自分のつぶやき2');
 
         // 実行
         $response = $this->actingAs($user1)->get("api/users/{$user1->id->value()}/timeline");
@@ -129,6 +135,32 @@ class TimelineControllerTest extends TestCase
             ],
             array_map(fn ($tweet) => $tweet['text'], $response->json()['contents']['tweets']),
         );
+    }
+
+    /**
+     * TimelineController::getTimeline
+     *
+     * @return void
+     */
+    public function test01_03_タイムラインは取得するインデックス件数を指定できる(): void
+    {
+        // 準備
+        $faker = Factory::create('ja_JP');
+
+        /** @var TubuyakiUser $user1 */
+        $user = $this->userAssistance->createUsers(1)->shift();
+        for ($i = 0; $i < 50; $i++) {
+            $content = $faker->realText();
+            $this->createTweet($user, $content);
+        }
+
+        // 実行
+        $response = $this->actingAs($user)->get("api/users/{$user->id->value()}/timeline?index=10&count=10");
+        // 検証
+        $response->assertStatus(200);
+        $content = $response->json();
+        $this->assertCount(10, $content['contents']['tweets']);
+        $this->assertSame('30', $content['contents']['next']);
     }
 
     private function createTweet(TubuyakiUser $user, string $content): Tweet

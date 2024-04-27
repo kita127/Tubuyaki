@@ -15,7 +15,7 @@ class TimelineService
     ) {
     }
 
-    public function getTimeline(TubuyakiUser $user): TimelineContents
+    public function getTimeline(TubuyakiUser $user, ?int $index, ?int $count): TimelineContents
     {
         // TODO: ソートはDBでやるようにする
         // 自分のつぶやきを取得する
