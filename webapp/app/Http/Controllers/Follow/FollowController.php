@@ -53,9 +53,10 @@ class FollowController extends Controller
     public function follow(Request $request, int $id): Response
     {
         $target = $this->userRepo->find($id);
-        /** @var Authenticatable $user */
-        $user = $request->user();
-        $this->service->follow($user, $target);
+        $target = new TubuyakiUser($target);
+        /** @var Authenticatable $me */
+        $me = $request->user();
+        $this->service->follow($me, $target);
         return response('', ResponseStatus::CREATED);
     }
 
