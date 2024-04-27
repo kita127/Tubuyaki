@@ -56,12 +56,12 @@ class TimelineContents
         $others = $followeeTweets->first();
         $myDate = $mine->entity->updated_at ? new Carbon($mine->entity->updated_at) : throw new LogicException();
         $othersDate = $others->entity->updated_at ? new Carbon($others->entity->updated_at) : throw new LogicException();
-        if ($myDate->isAfter($othersDate)) {
-            return $myTweets->pop();
-        } elseif ($othersDate->isAfter($myDate)) {
+
+        if ($othersDate->isAfter($myDate)) {
             return $followeeTweets->pop();
         } else {
-            throw new LogicException();
+            // 同じ時も自分
+            return $myTweets->pop();
         }
     }
 }
