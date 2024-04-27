@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Entities\Follower;
 use App\Entities\Identifiable\Unidentified;
 use App\Repositories\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use App\Entities\User as UserEntity;
 use Illuminate\Contracts\Support\Arrayable;
 use App\Entities\Identifiable\Id;
+use App\Repositories\Follower\FollowerRepository;
 
 class TubuyakiUser implements Authenticatable, Arrayable
 {
@@ -125,5 +127,11 @@ class TubuyakiUser implements Authenticatable, Arrayable
     public function getEntity(): UserEntity
     {
         return $this->entity;
+    }
+
+    public function follow(TubuyakiUser $target, FollowerRepository $repo): void
+    {
+        $followRelation = new Follower(new Unidentified(), $this->id->value(), $target->id->value());
+        $repo->save($followRelation);
     }
 }

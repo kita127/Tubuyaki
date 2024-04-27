@@ -46,7 +46,7 @@ class TweetControllerTest extends TestCase
         // 準備
         /** @var UserAssistance $userAssistance */
         $user = $this->userAssistance->createUser();
-        $tweet = $this->createTweet($user, 'つぶやきの内容');
+        $tweet = $this->createTweet($user, 'つぶやきの内容', TweetType::Normal);
 
         // 実行
         $response = $this->actingAs($user)->get("api/users/me/tweets");
@@ -78,7 +78,7 @@ class TweetControllerTest extends TestCase
         /** @var UserAssistance $userAssistance */
         $me = $this->userAssistance->createUser();
         $other = $this->userAssistance->createUser('other', '他人ユーザ', 'other@example.net', 'password');
-        $tweet = $this->createTweet($other, '他人のつぶやき');
+        $tweet = $this->createTweet($other, '他人のつぶやき', TweetType::Normal);
 
         // 実行
         $response = $this->actingAs($me)->get("api/users/{$other->id->value()}/tweets");
@@ -136,9 +136,9 @@ class TweetControllerTest extends TestCase
     {
         // 準備
         $me = $this->userAssistance->createUser();
-        $ownTweet = $this->createTweet($me, '自分のツイート');
+        $ownTweet = $this->createTweet($me, '自分のツイート', TweetType::Normal);
         $other = $this->userAssistance->createUsers(1)->first();
-        $tweets = $this->createTweets($other, 3);
+        $tweets = $this->createTweets($other, 3, TweetType::Reply);
         foreach ($tweets as $reply) {
             $this->createReplies($reply, $ownTweet);
         }
@@ -162,43 +162,40 @@ class TweetControllerTest extends TestCase
             [
                 'replies' => [
                     [
-                        'owner' => [
+                        'id' => $thd->id->value(),
+                        'text' => $thd->text,
+                        'tweet_type' => 'reply',
+                        'user' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
-                        'tweet' => [
-                            'id' => $thd->id->value(),
-                            'text' => $thd->text,
-                            'created_at' => $thd->created_at,
-                            'updated_at' => $thd->updated_at,
-                        ],
+                        'created_at' => $thd->created_at,
+                        'updated_at' => $thd->updated_at,
                     ],
                     [
-                        'owner' => [
+                        'id' => $snd->id->value(),
+                        'text' => $snd->text,
+                        'tweet_type' => 'reply',
+                        'user' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
-                        'tweet' => [
-                            'id' => $snd->id->value(),
-                            'text' => $snd->text,
-                            'created_at' => $snd->created_at,
-                            'updated_at' => $snd->updated_at,
-                        ],
+                        'created_at' => $snd->created_at,
+                        'updated_at' => $snd->updated_at,
                     ],
                     [
-                        'owner' => [
+                        'id' => $fst->id->value(),
+                        'text' => $fst->text,
+                        'tweet_type' => 'reply',
+                        'user' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
-                        'tweet' => [
-                            'id' => $fst->id->value(),
-                            'text' => $fst->text,
-                            'created_at' => $fst->created_at,
-                            'updated_at' => $fst->updated_at,
-                        ],
+                        'created_at' => $fst->created_at,
+                        'updated_at' => $fst->updated_at,
                     ],
                 ],
             ],
@@ -215,7 +212,7 @@ class TweetControllerTest extends TestCase
         $me = $this->userAssistance->createUser();
         $other = $this->userAssistance->createUsers(1)->first();
         /** @var Tweet $tweet */
-        $tweet = $this->createTweets($other, 1)->first();
+        $tweet = $this->createTweets($other, 1, TweetType::Normal)->first();
 
         // 実行
         $response = $this->actingAs($me)->post(
@@ -253,7 +250,7 @@ class TweetControllerTest extends TestCase
         $me = $this->userAssistance->createUser();
         $other = $this->userAssistance->createUsers(1)->first();
         /** @var Tweet $othersTweet */
-        $othersTweet = $this->createTweets($other, 1)->first();
+        $othersTweet = $this->createTweets($other, 1, TweetType::Normal)->first();
 
         // 実行
         $response = $this->actingAs($me)->post("api/tweets/{$othersTweet->id->value()}/retweet", []);
@@ -283,21 +280,21 @@ class TweetControllerTest extends TestCase
         return $this->tweetRepository->save($tweet);
     }
 
-    private function createTweet(TubuyakiUser $user, string $content): Tweet
+    private function createTweet(TubuyakiUser $user, string $content, TweetType $type): Tweet
     {
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), TweetType::Normal, $content);
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content);
         return $this->tweetRepository->save($tweet);
     }
 
     /**
      * @return Collection<Tweet>
      */
-    private function createTweets(TubuyakiUser $user, int $count): Collection
+    private function createTweets(TubuyakiUser $user, int $count, TweetType $type): Collection
     {
         $tweets = collect([]);
         for ($i = 0; $i < $count; $i++) {
             $text = fake()->realText(140);
-            $t = $this->createTweet($user, $text);
+            $t = $this->createTweet($user, $text, $type);
             $tweets->push($t);
         }
         return $tweets;

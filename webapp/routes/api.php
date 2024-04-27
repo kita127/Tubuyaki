@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Follow\FollowController;
+use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\TweetController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::get('/', [FollowController::class, 'getFollowers']);
             });
             Route::get('/tweets', [TweetController::class, 'getTweets']);
+            Route::get('/timeline', [TimelineController::class, 'getTimeline']);
         })->whereNumber('id');
     });
     Route::group(['prefix' => 'tweets'], function () {

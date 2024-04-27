@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Responses\Tweet;
+namespace App\Http\Responses;
 
 use App\Services\TubuyakiUser;
 use Illuminate\Contracts\Support\Arrayable;

@@ -3,7 +3,6 @@
 namespace App\Services\Follow;
 
 use App\Entities\Follower;
-use App\Entities\Identifiable\Unidentified;
 use App\Entities\User;
 use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\User\UserRepository;
@@ -44,10 +43,9 @@ class FollowService
         ]);
     }
 
-    public function follow(TubuyakiUser $me, User $target): void
+    public function follow(TubuyakiUser $me, TubuyakiUser $target): void
     {
-        $followRelation = new Follower(new Unidentified(), $me->id->value(), $target->id->value());
-        $this->followerRepository->save($followRelation);
+        $me->follow($target, $this->followerRepository);
     }
 
     public function unfollow(TubuyakiUser $me, User $target): void

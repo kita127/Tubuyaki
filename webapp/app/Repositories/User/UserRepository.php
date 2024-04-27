@@ -31,4 +31,10 @@ interface UserRepository
      * @return Collection<int, User>    key:ID
      */
     public function findIn(array $whereIn): Collection;
+
+    /**
+     * @param User $user
+     * @return Collection<int, User>
+     */
+    public function findFollowees(User $user): Collection;
 }
