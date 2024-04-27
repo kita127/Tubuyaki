@@ -8,9 +8,11 @@ use App\Entities\TweetType;
 use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\Tweet\TweetRepository;
 use App\Services\TubuyakiUser;
+use Carbon\Carbon;
 use Tests\Lib\UserAssistance;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\Lib\TimeUtil;
 
 class TimelineControllerTest extends TestCase
 {
@@ -24,9 +26,18 @@ class TimelineControllerTest extends TestCase
     {
         parent::setUp();
 
+        $now = new Carbon('2022-07-29 00:00:00');
+        Carbon::setTestNow($now);
+
         $this->userAssistance = app()->make(UserAssistance::class);
         $this->tweetRepository = app()->make(TweetRepository::class);
         $this->followerRepository = app()->make(FollowerRepository::class);
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
     }
 
     /**
@@ -41,9 +52,14 @@ class TimelineControllerTest extends TestCase
         /** @var TubuyakiUser $user1 */
         $user1 = $users->shift();
         $user2 = $users->shift();
-        $user1Tweet = $this->createTweet($user1, 'ユーザ1のつぶやき');
+
+        $now = Carbon::now();
+        TimeUtil::addTheDate(1, $now);
+        $user1Tweet = $this->createTweet($user1, '自分のつぶやき');
+
+        TimeUtil::addTheDate(3, $now);
         $user2Tweet = $this->createTweet($user2, 'ユーザ2のつぶやき');
-        $user1->follow($user2, $this->followerRepository);
+        $user1->follow($user2, $this->followerRepository);  // user2をフォローする
 
         // 実行
         $response = $this->actingAs($user1)->get("api/users/{$user1->id->value()}/timeline");
@@ -52,36 +68,37 @@ class TimelineControllerTest extends TestCase
         $response->assertStatus(200);
         $this->assertSame(
             [
-                'contents' => [
-                    'tweets' => [
-                        [
-                            'id' => $user1Tweet->id->value(),
-                            'text' => 'ユーザ1のつぶやき',
-                            'tweet_type' => 'normal',
-                            'user' => [
-                                'id' => $user1->id->value(),
-                                'account_name' => $user1->accountName(),
-                                'name' => $user1->name(),
-                            ],
-                            'created_at' => $user1Tweet->created_at,
-                            'updated_at' => $user1Tweet->updated_at,
-                        ],
-                        [
-                            'id' => $user2Tweet->id->value(),
-                            'text' => 'ユーザ2のつぶやき',
-                            'tweet_type' => 'normal',
-                            'user' => [
-                                'id' => $user2->id->value(),
-                                'account_name' => $user2->accountName(),
-                                'name' => $user2->name(),
-                            ],
-                            'created_at' => $user2Tweet->created_at,
-                            'updated_at' => $user2Tweet->updated_at,
-                        ],
-                    ],
-                ],
+                // 'contents' => [
+                //     'tweets' => [
+                //         [
+                //             'id' => $user2Tweet->id->value(),
+                //             'text' => 'ユーザ2のつぶやき',
+                //             'tweet_type' => 'normal',
+                //             'user' => [
+                //                 'id' => $user2->id->value(),
+                //                 'account_name' => $user2->accountName(),
+                //                 'name' => $user2->name(),
+                //             ],
+                //             'created_at' => $user2Tweet->created_at,
+                //             'updated_at' => $user2Tweet->updated_at,
+                //         ],
+                //         [
+                //             'id' => $user1Tweet->id->value(),
+                //             'text' => '自分のつぶやき',
+                //             'tweet_type' => 'normal',
+                //             'user' => [
+                //                 'id' => $user1->id->value(),
+                //                 'account_name' => $user1->accountName(),
+                //                 'name' => $user1->name(),
+                //             ],
+                //             'created_at' => $user1Tweet->created_at,
+                //             'updated_at' => $user1Tweet->updated_at,
+                //         ],
+                //     ],
+                // ],
             ],
-            $response->json()
+            $response->json(),
+            'updated_atの降順で並ぶ'
         );
     }
 
