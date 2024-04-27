@@ -17,8 +17,8 @@ class TimelineController extends Controller
     }
     public function getTimeline(Request $request, int $id): JsonResponse
     {
-        $index = $request->query('index');
-        $count = $request->query('count');
+        $index = $request->query('index') ?? TweetController::DEFAULT_INDEX;
+        $count = $request->query('count') ?? TweetController::DEFAULT_COUNT;
         $user = new TubuyakiUser($this->userRepository->find($id));
         $timeline = $this->service->getTimeline($user, $index, $count);
         $response = \App\Http\Responses\Timeline\TimelineContents::create($timeline);

@@ -15,7 +15,7 @@ class TimelineContents implements Arrayable
             $x = Tweet::create($tweet);
             $tweets->push($x);
         }
-        return new static($tweets);
+        return new static($tweets, $contents->nextIndex);
     }
 
     /**
@@ -23,11 +23,15 @@ class TimelineContents implements Arrayable
      */
     public function __construct(
         private readonly Collection $tweets,
+        private readonly int $nextIndex,
     ) {
     }
 
     public function toArray(): array
     {
-        return ['tweets' => $this->tweets->map(fn (Tweet $t) => $t->toArray())->toArray()];
+        return [
+            'tweets' => $this->tweets->map(fn (Tweet $t) => $t->toArray())->toArray(),
+            'next' => $this->nextIndex,
+        ];
     }
 }

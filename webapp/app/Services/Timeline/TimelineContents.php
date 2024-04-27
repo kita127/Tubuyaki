@@ -16,6 +16,7 @@ class TimelineContents
     public function __construct(
         public readonly Collection $myTweets,
         public readonly Collection $followeeTweets,
+        public readonly int $nextIndex,
     ) {
     }
 

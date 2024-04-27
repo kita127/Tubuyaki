@@ -19,16 +19,25 @@ class TweetService
     }
     /**
      * @param TubuyakiUser $user
-     * @return Collection<array>
+     * @return array{tweets: Collection<Tweet>, next: int|null}
      */
-    public function getTweets(TubuyakiUser $user): Collection
+    public function getTweets(TubuyakiUser $user, int $index, int $count): array
     {
-        $tweets = $this->tweetRepository->findAllBy(['user_id' => $user->id->value()]);
-        return $tweets->map(fn (Tweet $tweet) => [
-            'text' => $tweet->text,
-            'created_at' => $tweet->created_at,
-            'updated_at' => $tweet->updated_at,
-        ]);
+        $tweets = $this->tweetRepository->findAllBy(
+            ['user_id' => $user->id->value()],
+            $index,
+            $count + 1,
+        );
+        if ($tweets->count() > $count) {
+            $nextExists = true;
+            // 最後は不要なので捨てる
+            $tweets->pop();
+            $next = $index + $count;
+        } else {
+            $nextExists = false;
+            $next = null;
+        }
+        return ['tweets' => $tweets, 'next' => $next];
     }
 
     /**

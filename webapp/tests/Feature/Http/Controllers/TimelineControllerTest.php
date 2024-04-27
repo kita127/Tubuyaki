@@ -92,6 +92,7 @@ class TimelineControllerTest extends TestCase
                             'updated_at' => $user2Tweet->updated_at,
                         ],
                     ],
+                    'next' => null,
                 ],
             ],
             $response->json(),
@@ -160,7 +161,7 @@ class TimelineControllerTest extends TestCase
         $response->assertStatus(200);
         $content = $response->json();
         $this->assertCount(10, $content['contents']['tweets']);
-        $this->assertSame('30', $content['contents']['next']);
+        $this->assertSame(20, $content['contents']['next']);
     }
 
     private function createTweet(TubuyakiUser $user, string $content): Tweet

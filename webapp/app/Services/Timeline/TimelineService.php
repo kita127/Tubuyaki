@@ -15,11 +15,15 @@ class TimelineService
     ) {
     }
 
-    public function getTimeline(TubuyakiUser $user, ?int $index, ?int $count): TimelineContents
+    public function getTimeline(TubuyakiUser $user, int $index, int $count): TimelineContents
     {
         // TODO: ソートはDBでやるようにする
         // 自分のつぶやきを取得する
-        $entities = $this->tweetRepository->findAllBy(['user_id' => $user->id->value()]);
+        $entities = $this->tweetRepository->findAllBy(
+            ['user_id' => $user->id->value()],
+            $index,
+            $count
+        );
         $entities = $entities->sortByDesc('updated_at');
         $myTweets = collect([]);
         foreach ($entities as $entity) {
@@ -32,7 +36,11 @@ class TimelineService
         $followeeTweets = collect([]);
         $entities = collect([]);
         foreach ($followees as $followee) {
-            $es = $this->tweetRepository->findAllBy(['user_id' => $followee->id->value()]);
+            $es = $this->tweetRepository->findAllBy(
+                ['user_id' => $followee->id->value()],
+                $index,
+                $count
+            );
             $entities = $entities->merge($es);
         }
         $entities = $entities->sortByDesc('updated_at');
@@ -41,6 +49,6 @@ class TimelineService
             $followeeTweets->push(new Tweet($user, $entity));
         }
 
-        return new TimelineContents($myTweets, $followeeTweets);
+        return new TimelineContents($myTweets, $followeeTweets, $index + $count);
     }
 }

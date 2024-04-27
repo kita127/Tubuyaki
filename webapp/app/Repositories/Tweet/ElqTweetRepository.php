@@ -19,6 +19,7 @@ use App\Models\TweetType as ElqTweetType;
 use App\Models\Retweet as ElqRetweet;
 use App\Models\User as ElqUser;
 use App\Entities\User;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class ElqTweetRepository implements TweetRepository, Modifiable
 {
@@ -58,11 +59,28 @@ class ElqTweetRepository implements TweetRepository, Modifiable
 
     /**
      * @param array<string, mixed> $where
+     * @param ?int $offset
+     * @param ?int $limit
      * @return Collection<int, Tweet>    key:ID
      */
-    public function findAllBy(array $where): Collection
+    public function findAllBy(array $where, ?int $offset = null, ?int $limit = null): Collection
     {
-        return $this->commonRepo->findAllBy($where);
+        if (is_array($where)) {
+            $query = $this->commonRepo->createWhereQuery($where);
+        } elseif ($where instanceof Builder) {
+            $query = $where;
+        } else {
+            throw new LogicException();
+        }
+        if ($offset) {
+            $query->skip($offset);
+        }
+        if ($limit) {
+            $query->take($limit);
+        }
+        /** @var Collection<BaseModel> $models */
+        $models = $query->get();
+        return $models->map(fn (BaseModel $f) => $f->toEntity())->keyBy('id');
     }
 
     /**
