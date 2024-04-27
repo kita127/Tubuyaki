@@ -97,6 +97,40 @@ class TimelineControllerTest extends TestCase
         );
     }
 
+    public function test01_02_タイムラインは新しいものから順に取得する(): void
+    {
+        // 準備
+        $users = $this->userAssistance->createUsers(2);
+        /** @var TubuyakiUser $user1 */
+        $user1 = $users->shift();
+        $user2 = $users->shift();
+        $user1->follow($user2, $this->followerRepository);  // user2をフォローする
+
+        $now = Carbon::now();
+        $user1Tweet1 = $this->createTweet($user1, '4: 自分のつぶやき1');
+        TimeUtil::addTheDate(1, $now);
+        $user2Tweet1 = $this->createTweet($user2, '3: ユーザー2のつぶやき1');
+        TimeUtil::addTheDate(2, $now);
+        $user2Tweet2 = $this->createTweet($user2, '2: ユーザー2のつぶやき2');
+        TimeUtil::addTheDate(3, $now);
+        $user1Tweet2 = $this->createTweet($user1, '1: 自分のつぶやき2');
+
+        // 実行
+        $response = $this->actingAs($user1)->get("api/users/{$user1->id->value()}/timeline");
+
+        // 検証
+        $response->assertStatus(200);
+        $this->assertSame(
+            [
+                '1: 自分のつぶやき2',
+                '2: ユーザー2のつぶやき2',
+                '3: ユーザー2のつぶやき1',
+                '4: 自分のつぶやき1',
+            ],
+            array_map(fn ($tweet) => $tweet['text'], $response->json()['contents']['tweets']),
+        );
+    }
+
     private function createTweet(TubuyakiUser $user, string $content): Tweet
     {
         $tweet = new Tweet(new Unidentified(), $user->id->value(), TweetType::Normal, $content);

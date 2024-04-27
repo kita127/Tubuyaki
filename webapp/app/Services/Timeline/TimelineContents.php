@@ -27,8 +27,8 @@ class TimelineContents
     {
         $tweets = collect([]);
 
-        $myTweets = $this->myTweets;
-        $followeeTweets = $this->followeeTweets;
+        $myTweets = clone ($this->myTweets);
+        $followeeTweets = clone ($this->followeeTweets);
 
         while ($res = $this->getNewer($myTweets, $followeeTweets)) {
             $tweets->push($res);
@@ -46,9 +46,9 @@ class TimelineContents
             return null;
         }
         if ($myTweets->count() <= 0) {
-            return $followeeTweets->pop();
+            return $followeeTweets->shift();
         } elseif ($followeeTweets->count() <= 0) {
-            return $myTweets->pop();
+            return $myTweets->shift();
         }
         /** @var ?Tweet $x */
         $mine = $myTweets->first();
@@ -58,10 +58,10 @@ class TimelineContents
         $othersDate = $others->entity->updated_at ? new Carbon($others->entity->updated_at) : throw new LogicException();
 
         if ($othersDate->isAfter($myDate)) {
-            return $followeeTweets->pop();
+            return $followeeTweets->shift();
         } else {
             // 同じ時も自分
-            return $myTweets->pop();
+            return $myTweets->shift();
         }
     }
 }
