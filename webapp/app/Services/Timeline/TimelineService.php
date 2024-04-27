@@ -15,32 +15,34 @@ class TimelineService
     ) {
     }
 
-    public function getTimeline(TubuyakiUser $user): TimelineContents
+    public function getTimeline(TubuyakiUser $user, int $index, int $count): TimelineContents
     {
-        // TODO: ソートはDBでやるようにする
-        // 自分のつぶやきを取得する
-        $entities = $this->tweetRepository->findAllBy(['user_id' => $user->id->value()]);
-        $entities = $entities->sortByDesc('updated_at');
-        $myTweets = collect([]);
-        foreach ($entities as $entity) {
-            $myTweets->push(new Tweet($user, $entity));
-        }
-
-        // TODO: ソートはDBでやるようにする
-        // 自分のフォロイーのつぶやきを取得する
+        /** @var array<int, \App\Entities\User> $targetUserMap */
+        $targetUserMap = [$user->id->value() => $user->getEntity()];
         $followees = $this->userRepository->findFollowees($user->getEntity());
-        $followeeTweets = collect([]);
-        $entities = collect([]);
+        /** @var \App\Entities\User $followee */
         foreach ($followees as $followee) {
-            $es = $this->tweetRepository->findAllBy(['user_id' => $followee->id->value()]);
-            $entities = $entities->merge($es);
+            $targetUserMap[$followee->id->value()] = $followee;
         }
-        $entities = $entities->sortByDesc('updated_at');
-        foreach ($entities as $entity) {
-            $user = new TubuyakiUser($followee);
-            $followeeTweets->push(new Tweet($user, $entity));
+        $tweetEntities = $this->tweetRepository->findIn(
+            ['user_id' => array_keys($targetUserMap)],
+            $index,
+            $count + 1,
+            ['updated_at', 'id'],
+            'desc',
+        );
+        if ($tweetEntities->count() > $count) {
+            $tweetEntities->pop();  // 最後は余分なので削除
+            $next = $index + $count;
+        } else {
+            $next = null;
         }
-
-        return new TimelineContents($myTweets, $followeeTweets);
+        $tweets = collect([]);
+        /** @var \App\Entities\Tweet $entity */
+        foreach ($tweetEntities as $entity) {
+            $user = new TubuyakiUser($targetUserMap[$entity->user_id]);
+            $tweets->push(new Tweet($user, $entity));
+        }
+        return new TimelineContents($tweets, $next);
     }
 }

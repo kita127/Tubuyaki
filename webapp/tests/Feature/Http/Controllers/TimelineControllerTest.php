@@ -9,6 +9,7 @@ use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\Tweet\TweetRepository;
 use App\Services\TubuyakiUser;
 use Carbon\Carbon;
+use Faker\Factory;
 use Tests\Lib\UserAssistance;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -67,18 +68,6 @@ class TimelineControllerTest extends TestCase
                 'contents' => [
                     'tweets' => [
                         [
-                            'id' => $user1Tweet->id->value(),
-                            'text' => '自分のつぶやき',
-                            'tweet_type' => 'normal',
-                            'user' => [
-                                'id' => $user1->id->value(),
-                                'account_name' => $user1->accountName(),
-                                'name' => $user1->name(),
-                            ],
-                            'created_at' => $user1Tweet->created_at,
-                            'updated_at' => $user1Tweet->updated_at,
-                        ],
-                        [
                             'id' => $user2Tweet->id->value(),
                             'text' => 'ユーザ2のつぶやき',
                             'tweet_type' => 'normal',
@@ -90,13 +79,31 @@ class TimelineControllerTest extends TestCase
                             'created_at' => $user2Tweet->created_at,
                             'updated_at' => $user2Tweet->updated_at,
                         ],
+                        [
+                            'id' => $user1Tweet->id->value(),
+                            'text' => '自分のつぶやき',
+                            'tweet_type' => 'normal',
+                            'user' => [
+                                'id' => $user1->id->value(),
+                                'account_name' => $user1->accountName(),
+                                'name' => $user1->name(),
+                            ],
+                            'created_at' => $user1Tweet->created_at,
+                            'updated_at' => $user1Tweet->updated_at,
+                        ],
                     ],
+                    'next' => null,
                 ],
             ],
             $response->json(),
         );
     }
 
+    /**
+     * TimelineController::getTimeline
+     *
+     * @return void
+     */
     public function test01_02_タイムラインは新しいものから順に取得する(): void
     {
         // 準備
@@ -107,13 +114,13 @@ class TimelineControllerTest extends TestCase
         $user1->follow($user2, $this->followerRepository);  // user2をフォローする
 
         $now = Carbon::now();
-        $user1Tweet1 = $this->createTweet($user1, '4: 自分のつぶやき1');
+        $this->createTweet($user1, '4: 自分のつぶやき1');
         TimeUtil::addTheDate(1, $now);
-        $user2Tweet1 = $this->createTweet($user2, '3: ユーザー2のつぶやき1');
+        $this->createTweet($user2, '3: ユーザー2のつぶやき1');
         TimeUtil::addTheDate(2, $now);
-        $user2Tweet2 = $this->createTweet($user2, '2: ユーザー2のつぶやき2');
+        $this->createTweet($user2, '2: ユーザー2のつぶやき2');
         TimeUtil::addTheDate(3, $now);
-        $user1Tweet2 = $this->createTweet($user1, '1: 自分のつぶやき2');
+        $this->createTweet($user1, '1: 自分のつぶやき2');
 
         // 実行
         $response = $this->actingAs($user1)->get("api/users/{$user1->id->value()}/timeline");
@@ -129,6 +136,51 @@ class TimelineControllerTest extends TestCase
             ],
             array_map(fn ($tweet) => $tweet['text'], $response->json()['contents']['tweets']),
         );
+    }
+
+    /**
+     * TimelineController::getTimeline
+     *
+     * @return void
+     */
+    public function test01_03_タイムラインは取得するインデックス件数を指定できる(): void
+    {
+        // 準備
+        $faker = Factory::create('ja_JP');
+
+        /** @var TubuyakiUser $user1 */
+        $user = $this->userAssistance->createUsers(1)->shift();
+        $expected = collect([]);
+        for ($i = 0; $i < 30; $i++) {
+            $content = $faker->realText();
+            $expected->push($this->createTweet($user, $content));
+        }
+
+        $actualTweets = [];
+        $index = 0;
+        $count = 10;
+        do {
+            // 実行
+            $response = $this->actingAs($user)->get("api/users/{$user->id->value()}/timeline?index={$index}&count={$count}");
+            // 検証
+            $response->assertStatus(200);
+            $content = $response->json();
+            $tweets = $content['contents']['tweets'];
+            $next = $content['contents']['next'];
+
+            $this->assertCount(10, $tweets);
+            $actualTweets = array_merge($actualTweets, $tweets);
+            if ($next) {
+                $this->assertSame($index + $count, $next);
+            }
+            $index = $next;
+        } while ($next);
+
+        // 合計30件あって要素の被りもないことを確認する
+        $this->assertCount(30, $actualTweets);
+        $idList = array_map(fn ($x) => $x['id'], $actualTweets);
+        $idList = array_unique($idList);
+        $this->assertCount(30, $idList, '重複していないことを確認する');
     }
 
     private function createTweet(TubuyakiUser $user, string $content): Tweet

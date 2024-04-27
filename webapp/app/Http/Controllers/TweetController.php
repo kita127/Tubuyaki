@@ -15,6 +15,9 @@ use Illuminate\Http\Response;
 
 class TweetController extends Controller
 {
+    const DEFAULT_INDEX = 0;
+    const DEFAULT_COUNT = 30;
+
     public function __construct(
         private readonly TweetService $service,
         private readonly TweetRepository $tweetRepo,
@@ -24,27 +27,27 @@ class TweetController extends Controller
 
     public function getMyTweets(Request $request): JsonResponse
     {
+        $index = $request->query('index') ?? self::DEFAULT_INDEX;
+        $count = $request->query('count') ?? self::DEFAULT_COUNT;
         $me = $request->user();
-        $result = $this->service->getTweets($me);
+        ['tweets' => $tweets, 'next' => $next] = $this->service->getTweets($me, $index, $count);
+        $response = new \App\Http\Responses\Tweet\Tweets($tweets, $next);
         return response()->json([
-            'tweets' => $result->map(fn ($v) => [
-                'text' => $v['text'],
-                'created_at' => $v['created_at'],
-                'updated_at' => $v['updated_at'],
-            ])->values(),
-        ], 200);
+            'contents' => $response->toArray(),
+        ]);
     }
 
-    public function getTweets(int $id): JsonResponse
+    public function getTweets(Request $request, int $id): JsonResponse
     {
+        $index = $request->query('index') ?? self::DEFAULT_INDEX;
+        $count = $request->query('count') ?? self::DEFAULT_COUNT;
         $ue = $this->userRepo->find($id);
         $user = new TubuyakiUser($ue);
-        $tweets = $this->service->getTweets($user);
-        return response()->json(
-            [
-                'tweets' => $tweets->values(),
-            ]
-        );
+        ['tweets' => $tweets, 'next' => $next] = $this->service->getTweets($user, $index, $count);
+        $response = new \App\Http\Responses\Tweet\Tweets($tweets, $next);
+        return response()->json([
+            'contents' => $response->toArray(),
+        ]);
     }
 
     public function post(TweetRequest $request): Response

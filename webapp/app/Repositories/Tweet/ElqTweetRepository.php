@@ -19,6 +19,7 @@ use App\Models\TweetType as ElqTweetType;
 use App\Models\Retweet as ElqRetweet;
 use App\Models\User as ElqUser;
 use App\Entities\User;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class ElqTweetRepository implements TweetRepository, Modifiable
 {
@@ -58,12 +59,81 @@ class ElqTweetRepository implements TweetRepository, Modifiable
 
     /**
      * @param array<string, mixed> $where
+     * @param ?int $offset
+     * @param ?int $limit
      * @return Collection<int, Tweet>    key:ID
      */
-    public function findAllBy(array $where): Collection
+    public function findAllBy(array $where, ?int $offset = null, ?int $limit = null): Collection
     {
-        return $this->commonRepo->findAllBy($where);
+        if (is_array($where)) {
+            $query = $this->commonRepo->createWhereQuery($where);
+        } elseif ($where instanceof Builder) {
+            $query = $where;
+        } else {
+            throw new LogicException();
+        }
+        if ($offset) {
+            $query->skip($offset);
+        }
+        if ($limit) {
+            $query->take($limit);
+        }
+        /** @var Collection<BaseModel> $models */
+        $models = $query->get();
+        return $models->map(fn (BaseModel $f) => $f->toEntity())->keyBy('id');
     }
+
+    /**
+     * @param array<string, array> $whereIn
+     * @param ?int $offset
+     * @param ?int $limit
+     * @param ?array<string> $orderBy
+     * @param string $direction
+     * @return Collection<int, Tweet>    key:ID
+     */
+    public function findIn(
+        array $whereIn,
+        ?int $offset = null,
+        ?int $limit = null,
+        ?array $orderBy = null,
+        string $direction = 'asc'
+    ): Collection {
+        $keys = array_keys($whereIn);
+        if (count($keys) !== 1) {
+            throw new LogicException();
+        }
+        $values = array_values($whereIn);
+        if (count($values) !== 1) {
+            throw new LogicException();
+        }
+        if (!is_array($values[0])) {
+            throw new LogicException();
+        }
+        $query = $this->model->query()->whereIn($keys[0], $values[0]);
+
+        if ($offset) {
+            $query->skip($offset);
+        }
+        if ($limit) {
+            $query->take($limit);
+        }
+        if ($orderBy) {
+            if ($direction !== 'asc' && $direction !== 'desc') {
+                new LogicException('Direction must be asc or desc.');
+            }
+            foreach ($orderBy as $col) {
+                $query->orderBy($col, $direction);
+            }
+        }
+        /** @var Collection<BaseModel> $models */
+        $models = $query->get();
+        $result = collect([]);
+        foreach ($models as $model) {
+            $result->put($model->id, $model->toEntity());
+        }
+        return $result;
+    }
+
 
     /**
      * @param Tweet $reply  返信つぶやき

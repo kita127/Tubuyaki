@@ -109,7 +109,7 @@ class ElqCommonRepository
      * @param array<string, mixed> $where
      * @return Builder
      */
-    private function createWhereQuery(array $where): Builder
+    public function createWhereQuery(array $where): Builder
     {
         $query = $this->model->newQuery();
         foreach ($where as $key => $value) {

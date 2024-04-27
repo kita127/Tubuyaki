@@ -22,9 +22,21 @@ interface TweetRepository
 
     /**
      * @param array<string, mixed> $where
+     * @param ?int $offset
+     * @param ?int $limit
      * @return Collection<int, Tweet>    key:ID
      */
-    public function findAllBy(array $where): Collection;
+    public function findAllBy(array $where, ?int $offset = null, ?int $limit = null): Collection;
+
+    /**
+     * @param array<string, array> $whereIn
+     * @param ?int $offset
+     * @param ?int $limit
+     * @param ?array<string> $orderBy
+     * @param string $direction
+     * @return Collection<int, Tweet>    key:ID
+     */
+    public function findIn(array $whereIn, ?int $offset = null, ?int $limit = null, ?array $orderBy = null, string $direction = 'asc'): Collection;
 
     /**
      * @param Tweet $reply  返信つぶやき

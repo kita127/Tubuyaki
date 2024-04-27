@@ -15,10 +15,12 @@ class TimelineController extends Controller
         private readonly UserRepository $userRepository,
     ) {
     }
-    public function getTimeline(int $id): JsonResponse
+    public function getTimeline(Request $request, int $id): JsonResponse
     {
+        $index = $request->query('index') ?? TweetController::DEFAULT_INDEX;
+        $count = $request->query('count') ?? TweetController::DEFAULT_COUNT;
         $user = new TubuyakiUser($this->userRepository->find($id));
-        $timeline = $this->service->getTimeline($user);
+        $timeline = $this->service->getTimeline($user, $index, $count);
         $response = \App\Http\Responses\Timeline\TimelineContents::create($timeline);
         return response()->json(
             [

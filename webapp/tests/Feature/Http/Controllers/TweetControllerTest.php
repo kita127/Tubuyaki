@@ -53,7 +53,7 @@ class TweetControllerTest extends TestCase
 
         // 検証
         $response->assertStatus(200);
-        $content = $response->json();
+        $content = $response->json()['contents'];
         $this->assertSame(
             [
                 'tweets' => [
@@ -63,9 +63,31 @@ class TweetControllerTest extends TestCase
                         'updated_at' => $tweet->updated_at,
                     ],
                 ],
+                'next' => null, // 次がなければnull
             ],
             $content
         );
+    }
+
+    /**
+     * TweetController::getMyTweets
+     * @return void
+     */
+    public function test01_02_自分のつぶやき一覧を取得する_ページネーション(): void
+    {
+        // 準備
+        /** @var UserAssistance $userAssistance */
+        $user = $this->userAssistance->createUser();
+        $this->createTweets($user, 30, TweetType::Normal);
+
+        // 実行
+        $response = $this->actingAs($user)->get("api/users/me/tweets?index=10&count=10");
+
+        // 検証
+        $response->assertStatus(200);
+        $content = $response->json()['contents'];
+        $this->assertCount(10, $content['tweets']);
+        $this->assertSame(20, $content['next']);
     }
 
     /**
@@ -85,7 +107,7 @@ class TweetControllerTest extends TestCase
 
         // 検証
         $response->assertStatus(200);
-        $content = $response->json();
+        $content = $response->json()['contents'];
         $this->assertSame(
             [
                 'tweets' => [
@@ -95,9 +117,32 @@ class TweetControllerTest extends TestCase
                         'updated_at' => $tweet->updated_at,
                     ],
                 ],
+                'next' => null,
             ],
             $content
         );
+    }
+
+    /**
+     * TweetController::getMyTweets
+     * @return void
+     */
+    public function test02_02_任意のユーザーのつぶやき一覧を取得する_ページネーション(): void
+    {
+        // 準備
+        /** @var UserAssistance $userAssistance */
+        $me = $this->userAssistance->createUser();
+        $other = $this->userAssistance->createUser('other', '他人ユーザ', 'other@example.net', 'password');
+        $tweets = $this->createTweets($other, 30, TweetType::Normal);
+
+        // 実行
+        $response = $this->actingAs($me)->get("api/users/{$other->id->value()}/tweets?index=10&count=10");
+
+        // 検証
+        $response->assertStatus(200);
+        $content = $response->json()['contents'];
+        $this->assertCount(10, $content['tweets']);
+        $this->assertSame(20, $content['next']);
     }
 
     /**
