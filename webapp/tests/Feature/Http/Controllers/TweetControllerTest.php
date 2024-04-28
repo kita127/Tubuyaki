@@ -108,7 +108,7 @@ class TweetControllerTest extends TestCase
     }
 
     /**
-     * TweetController::getMyTweets
+     * TweetController::getTweets
      * @return void
      */
     public function test02_01_任意のユーザーのつぶやき一覧を取得する(): void
@@ -141,7 +141,7 @@ class TweetControllerTest extends TestCase
     }
 
     /**
-     * TweetController::getMyTweets
+     * TweetController::getTweets
      * @return void
      */
     public function test02_02_任意のユーザーのつぶやき一覧を取得する_ページネーション(): void
@@ -150,16 +150,32 @@ class TweetControllerTest extends TestCase
         /** @var UserAssistance $userAssistance */
         $me = $this->userAssistance->createUser();
         $other = $this->userAssistance->createUser('other', '他人ユーザ', 'other@example.net', 'password');
-        $tweets = $this->createTweets($other, 30, TweetType::Normal);
+        $expected = $this->createTweets($other, 30, TweetType::Normal);
+        $expected = $expected->sortByDesc(function (Tweet $item, $key) {
+            return $item->updated_at . $item->id->value();
+        });
 
-        // 実行
-        $response = $this->actingAs($me)->get("api/users/{$other->id->value()}/tweets?index=10&count=10");
+        $allTweets = [];
+        $index = 0;
+        do {
+            // 実行
+            $response = $this->actingAs($me)->get("api/users/{$other->id->value()}/tweets?index={$index}&count=10");
 
-        // 検証
-        $response->assertStatus(200);
-        $content = $response->json()['contents'];
-        $this->assertCount(10, $content['tweets']);
-        $this->assertSame(20, $content['next']);
+            // 検証
+            $response->assertStatus(200);
+            $content = $response->json()['contents'];
+            $tweets = $content['tweets'];
+            $next = $content['next'];
+            $this->assertCount(10, $tweets);
+            $allTweets = array_merge($allTweets, $tweets);
+            if ($next) {
+                $this->assertSame($index + 10, $next);
+            }
+            $index = $next;
+        } while ($index);
+        $expectedTexts = $expected->pluck('text')->all();
+        $allTexts = array_map(fn ($x) => $x['text'], $allTweets);
+        $this->assertSame($expectedTexts, $allTexts);
     }
 
     /**
