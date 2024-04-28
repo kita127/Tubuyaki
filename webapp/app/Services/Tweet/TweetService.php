@@ -27,14 +27,14 @@ class TweetService
             ['user_id' => $user->id->value()],
             $index,
             $count + 1,
+            ['updated_at', 'id'],
+            'desc',
         );
         if ($tweets->count() > $count) {
-            $nextExists = true;
             // 最後は不要なので捨てる
             $tweets->pop();
             $next = $index + $count;
         } else {
-            $nextExists = false;
             $next = null;
         }
         return ['tweets' => $tweets, 'next' => $next];
