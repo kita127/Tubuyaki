@@ -78,16 +78,33 @@ class TweetControllerTest extends TestCase
         // 準備
         /** @var UserAssistance $userAssistance */
         $user = $this->userAssistance->createUser();
-        $this->createTweets($user, 30, TweetType::Normal);
+        $expected = $this->createTweets($user, 30, TweetType::Normal);
+        $expected = $expected->sortByDesc(function (Tweet $item, $key) {
+            return $item->updated_at . $item->id->value();
+        });
 
-        // 実行
-        $response = $this->actingAs($user)->get("api/users/me/tweets?index=10&count=10");
+        $index = 0;
+        $allTweets = [];
+        do {
+            // 実行
+            $response = $this->actingAs($user)->get("api/users/me/tweets?index={$index}&count=10");
 
-        // 検証
-        $response->assertStatus(200);
-        $content = $response->json()['contents'];
-        $this->assertCount(10, $content['tweets']);
-        $this->assertSame(20, $content['next']);
+            // 検証
+            $response->assertStatus(200);
+            $content = $response->json()['contents'];
+            $tweets = $content['tweets'];
+            $this->assertCount(10, $tweets);
+            $allTweets = array_merge($allTweets, $tweets);
+            $next = $content['next'];
+            if ($next) {
+                $this->assertSame($index + 10, $next);
+            }
+            $index = $next;
+        } while ($index);
+
+        $expectedTexts = $expected->pluck('text')->all();
+        $acualTexts = array_map(fn ($x) => $x['text'], $allTweets);
+        $this->assertSame($expectedTexts, $acualTexts);
     }
 
     /**

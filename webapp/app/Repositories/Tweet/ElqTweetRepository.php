@@ -58,13 +58,21 @@ class ElqTweetRepository implements TweetRepository, Modifiable
     }
 
     /**
-     * @param array<string, mixed> $where
-     * @param ?int $offset
-     * @param ?int $limit
-     * @return Collection<int, Tweet>    key:ID
+     * 
+     * @param array $where 
+     * @param null|int $offset 
+     * @param null|int $limit 
+     * @param null|array $orderBy 
+     * @param string $description 
+     * @return Collection 
      */
-    public function findAllBy(array $where, ?int $offset = null, ?int $limit = null): Collection
-    {
+    public function findAllBy(
+        array $where,
+        ?int $offset = null,
+        ?int $limit = null,
+        ?array $orderBy = null,
+        string $description = 'asc'
+    ): Collection {
         if (is_array($where)) {
             $query = $this->commonRepo->createWhereQuery($where);
         } elseif ($where instanceof Builder) {
@@ -77,6 +85,14 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         }
         if ($limit) {
             $query->take($limit);
+        }
+        if ($orderBy) {
+            if ($description !== 'asc' && $description !== 'desc') {
+                throw new LogicException('description is expected asc or desc.');
+            }
+            foreach ($orderBy as $col) {
+                $query->orderBy($col, $description);
+            }
         }
         /** @var Collection<BaseModel> $models */
         $models = $query->get();
