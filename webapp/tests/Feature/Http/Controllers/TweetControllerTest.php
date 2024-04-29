@@ -350,6 +350,38 @@ class TweetControllerTest extends TestCase
         );
     }
 
+    public function test07_01_つぶやきIDを指定してつぶやきの詳細を取得する(): void
+    {
+        // 準備
+        /** @var UserAssistance $userAssistance */
+        $user = $this->userAssistance->createUser();
+        $tweet = $this->createTweet($user, 'つぶやきの内容', TweetType::Normal);
+
+        // 実行
+        $response = $this->actingAs($user)->get("api/tweets/{$tweet->id}");
+
+        // 検証
+        $response->assertStatus(200);
+        $content = $response->json();
+        $this->assertSame(
+            [
+                'tweet' => [
+                    'id' => $tweet->id->value(),
+                    'text' => 'つぶやきの内容',
+                    'tweet_type' => 'normal',
+                    'user' => [
+                        'id' => $user->id->value(),
+                        'account_name' => $user->accountName(),
+                        'name' => $user->name(),
+                    ],
+                    'created_at' => $tweet->created_at,
+                    'updated_at' => $tweet->updated_at,
+                ],
+            ],
+            $content
+        );
+    }
+
     private function updateTweetWithTime(Tweet $tweet, Carbon $time): Tweet
     {
         // 何かしら更新しないと更新されないので

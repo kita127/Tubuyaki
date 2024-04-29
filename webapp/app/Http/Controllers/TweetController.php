@@ -37,6 +37,15 @@ class TweetController extends Controller
         ]);
     }
 
+    public function getTweet(int $id): JsonResponse
+    {
+        $tweet = $this->service->getTweet($id);
+        $response = \App\Http\Responses\Tweet\Tweet::create($tweet);
+        return response()->json([
+            'tweet' => $response->toArray(),
+        ]);
+    }
+
     public function getTweets(Request $request, int $id): JsonResponse
     {
         $index = $request->query('index') ?? self::DEFAULT_INDEX;
