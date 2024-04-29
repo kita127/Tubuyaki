@@ -348,6 +348,11 @@ class TweetControllerTest extends TestCase
             ],
             $users->toArray()
         );
+
+        // リツイートとして新しいつぶやきが作成されている
+        $tweet = $this->tweetRepository->findAllBy(['user_id' => $me->id->value()])->first();
+        $this->assertSame($me->id->value(), $tweet->user_id);
+        $this->assertSame('retweet', $tweet->type->value);
     }
 
     public function test07_01_つぶやきIDを指定してつぶやきの詳細を取得する(): void

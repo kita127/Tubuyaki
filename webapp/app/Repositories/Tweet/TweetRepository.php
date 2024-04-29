@@ -22,7 +22,7 @@ interface TweetRepository
 
     /**
      * 
-     * @param array $where 
+     * @param array<mixed, mixed> $where array<key, value>
      * @param null|int $offset 
      * @param null|int $limit 
      * @param null|array $orderBy 
