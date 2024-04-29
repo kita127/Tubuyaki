@@ -8,6 +8,7 @@ use App\Entities\TweetType;
 use App\Repositories\Follower\FollowerRepository;
 use App\Repositories\Tweet\TweetRepository;
 use App\Services\TubuyakiUser;
+use App\Services\Tweet\TweetService;
 use Carbon\Carbon;
 use Faker\Factory;
 use Tests\Lib\UserAssistance;
@@ -183,9 +184,83 @@ class TimelineControllerTest extends TestCase
         $this->assertCount(30, $idList, '重複していないことを確認する');
     }
 
-    private function createTweet(TubuyakiUser $user, string $content): Tweet
+    /**
+     * TimelineController::getTimeline
+     *
+     * @return void
+     */
+    public function test01_04_タイムラインでいろんなタイプのつぶやきを取得(): void
     {
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), TweetType::Normal, $content);
+        // 準備
+        $users = $this->userAssistance->createUsers(2);
+        /** @var TubuyakiUser $user1 */
+        $user1 = $users->shift();
+        $user2 = $users->shift();
+
+        $user1Tweet = $this->createTweet($user1, '自分のつぶやき');
+        $user2Tweet = $this->createTweet($user2, 'ユーザー2のつぶやき');
+        $user1->follow($user2, $this->followerRepository);  // user2をフォローする
+
+        /** @var TweetService $tweetService */
+        $user1Reply = $this->createTweet($user1, 'ユーザー2のつぶやきへの返信', TweetType::Reply);
+        $this->tweetRepository->reply($user1Reply, $user2Tweet);
+
+        // 実行
+        $response = $this->actingAs($user1)->get("api/users/{$user1->id->value()}/timeline");
+
+        // 検証
+        $response->assertStatus(200);
+        $this->assertSame(
+            [
+                'contents' => [
+                    'tweets' => [
+                        [
+                            'id' => $user1Reply->id->value(),
+                            'text' => 'ユーザー2のつぶやきへの返信',
+                            'tweet_type' => 'reply',
+                            'user' => [
+                                'id' => $user1->id->value(),
+                                'account_name' => $user1->accountName(),
+                                'name' => $user1->name(),
+                            ],
+                            'created_at' => $user1Reply->created_at,
+                            'updated_at' => $user1Reply->updated_at,
+                        ],
+                        [
+                            'id' => $user2Tweet->id->value(),
+                            'text' => 'ユーザー2のつぶやき',
+                            'tweet_type' => 'normal',
+                            'user' => [
+                                'id' => $user2->id->value(),
+                                'account_name' => $user2->accountName(),
+                                'name' => $user2->name(),
+                            ],
+                            'created_at' => $user2Tweet->created_at,
+                            'updated_at' => $user2Tweet->updated_at,
+                        ],
+                        [
+                            'id' => $user1Tweet->id->value(),
+                            'text' => '自分のつぶやき',
+                            'tweet_type' => 'normal',
+                            'user' => [
+                                'id' => $user1->id->value(),
+                                'account_name' => $user1->accountName(),
+                                'name' => $user1->name(),
+                            ],
+                            'created_at' => $user1Tweet->created_at,
+                            'updated_at' => $user1Tweet->updated_at,
+                        ],
+                    ],
+                    'next' => null,
+                ],
+            ],
+            $response->json()
+        );
+    }
+
+    private function createTweet(TubuyakiUser $user, string $content, TweetType $type = TweetType::Normal): Tweet
+    {
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content);
         return $this->tweetRepository->save($tweet);
     }
 }
