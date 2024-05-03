@@ -385,6 +385,7 @@ class TweetControllerTest extends TestCase
                         'account_name' => $user->accountName(),
                         'name' => $user->name(),
                     ],
+                    'target_id' => null,
                     'created_at' => $tweet->created_at,
                     'updated_at' => $tweet->updated_at,
                 ],
