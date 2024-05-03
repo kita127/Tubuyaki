@@ -433,9 +433,15 @@ class TweetControllerTest extends TestCase
     private function updateTweetWithTime(Tweet $tweet, Carbon $time): Tweet
     {
         // 何かしら更新しないと更新されないので
-        $tweet->text = $tweet->text . '<更新後>';
+        $updated = new Tweet(
+            id: $tweet->id,
+            user_id: $tweet->user_id,
+            type: $tweet->type,
+            text: $tweet->text . '<更新後>',
+            target_id: $tweet->target_id,
+        );
         Carbon::setTestNow($time);
-        return $this->tweetRepository->save($tweet);
+        return $this->tweetRepository->save($updated);
     }
 
     private function createTweet(TubuyakiUser $user, string $content, TweetType $type): Tweet
