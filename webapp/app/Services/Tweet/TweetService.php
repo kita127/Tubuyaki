@@ -2,6 +2,7 @@
 
 namespace App\Services\Tweet;
 
+use App\Entities\Identifiable\Identified;
 use App\Entities\Identifiable\Unidentified;
 use App\Repositories\Tweet\TweetRepository;
 use App\Services\TubuyakiUser;
@@ -9,6 +10,7 @@ use Illuminate\Support\Collection;
 use App\Entities\Tweet as EntityTweet;
 use App\Entities\TweetType;
 use App\Repositories\User\UserRepository;
+use LogicException;
 
 class TweetService
 {
@@ -16,6 +18,33 @@ class TweetService
         private readonly TweetRepository $tweetRepository,
         private readonly UserRepository $userRepository,
     ) {
+    }
+
+    private function createTweetFromEntity(EntityTweet $entity): Tweet
+    {
+        $owner = $this->userRepository->find($entity->user_id);
+        $owner = new TubuyakiUser($owner);
+        $tweet = null;
+        // TODO: ポリモフィズムで
+        switch ($entity->type) {
+            case TweetType::Normal:
+                $tweet = new NormalTweet($owner, $entity);
+                break;
+            case TweetType::Reply:
+                if (!$entity->target_id->isIdentified()) throw new LogicException();
+                $target = $this->getTweetById($entity->target_id);
+                $tweet = new Reply($owner, $entity, $target);
+                break;
+            case TweetType::Retweet:
+                $targetId = $entity->target_id;
+                if (!$targetId->isIdentified()) throw new LogicException();
+                $target = $this->getTweetById($entity->target_id);
+                $tweet = new Retweet($owner, $entity, $target);
+                break;
+            default:
+                throw new LogicException();
+        }
+        return $tweet;
     }
 
     /**
@@ -26,9 +55,7 @@ class TweetService
     public function getTweet(int $id): Tweet
     {
         $entity = $this->tweetRepository->find($id);
-        $owner = $this->userRepository->find($entity->user_id);
-        $owner = new TubuyakiUser($owner);
-        return new Tweet($owner, $entity);
+        return $this->createTweetFromEntity($entity);
     }
 
     /**
@@ -59,9 +86,10 @@ class TweetService
      * @param string $text
      * @return EntityTweet
      */
-    public function post(TubuyakiUser $user, string $text, TweetType $tweetType): EntityTweet
+    public function post(TubuyakiUser $user, string $text, TweetType $tweetType, ?Identified $targetId = null): EntityTweet
     {
-        $tweet = new EntityTweet(new Unidentified(), $user->id->value(), $tweetType, $text);
+        $targetId = $targetId ?? new Unidentified();
+        $tweet = new EntityTweet(new Unidentified(), $user->id->value(), $tweetType, $text, $targetId);
         return $this->tweetRepository->save($tweet);
     }
 
@@ -84,14 +112,20 @@ class TweetService
         return $result;
     }
 
-    public function reply(EntityTweet $tweet, TubuyakiUser $user, string $text): void
+    public function reply(EntityTweet $targetTweet, TubuyakiUser $user, string $text): void
     {
-        $reply = $this->post($user, $text, TweetType::Reply);
-        $this->tweetRepository->reply($reply, $tweet);
+        $reply = $this->post($user, $text, TweetType::Reply, $targetTweet->id);
+        $this->tweetRepository->reply($reply, $targetTweet);
     }
 
     public function retweet(EntityTweet $tweet, TubuyakiUser $user): void
     {
         $this->tweetRepository->retweet($tweet, $user->getEntity());
+    }
+
+    public function getTweetById(Identified $id): Tweet
+    {
+        $target = $this->tweetRepository->find($id->value());
+        return $this->createTweetFromEntity($target);
     }
 }

@@ -205,19 +205,38 @@ class TimelineControllerTest extends TestCase
         $user1Reply = $this->createTweet($user1, 'ユーザー2のつぶやきへの返信', TweetType::Reply);
         $this->tweetRepository->reply($user1Reply, $user2Tweet);
 
+        $this->tweetRepository->retweet($user2Tweet, $user1->getEntity());
+
         // 実行
         $response = $this->actingAs($user1)->get("api/users/{$user1->id->value()}/timeline");
 
         // 検証
         $response->assertStatus(200);
+        $content = $response->json();
         $this->assertSame(
             [
                 'contents' => [
                     'tweets' => [
                         [
+                            'id' => $content['contents']['tweets'][0]['id'],
+                            'tweet_type' => 'retweet',
+                            'contents' => [
+                                'target_tweet' => $user2Tweet->id->value(),
+                            ],
+                            'user' => [
+                                'id' => $user1->id->value(),
+                                'account_name' => $user1->accountName(),
+                                'name' => $user1->name(),
+                            ],
+                            'created_at' => $content['contents']['tweets'][0]['created_at'],
+                            'updated_at' => $content['contents']['tweets'][0]['updated_at'],
+                        ],
+                        [
                             'id' => $user1Reply->id->value(),
-                            'text' => 'ユーザー2のつぶやきへの返信',
                             'tweet_type' => 'reply',
+                            'contents' => [
+                                'text' => 'ユーザー2のつぶやきへの返信',
+                            ],
                             'user' => [
                                 'id' => $user1->id->value(),
                                 'account_name' => $user1->accountName(),
@@ -228,8 +247,10 @@ class TimelineControllerTest extends TestCase
                         ],
                         [
                             'id' => $user2Tweet->id->value(),
-                            'text' => 'ユーザー2のつぶやき',
                             'tweet_type' => 'normal',
+                            'contents' => [
+                                'text' => 'ユーザー2のつぶやき',
+                            ],
                             'user' => [
                                 'id' => $user2->id->value(),
                                 'account_name' => $user2->accountName(),
@@ -240,8 +261,10 @@ class TimelineControllerTest extends TestCase
                         ],
                         [
                             'id' => $user1Tweet->id->value(),
-                            'text' => '自分のつぶやき',
                             'tweet_type' => 'normal',
+                            'contents' => [
+                                'text' => '自分のつぶやき',
+                            ],
                             'user' => [
                                 'id' => $user1->id->value(),
                                 'account_name' => $user1->accountName(),
@@ -254,7 +277,7 @@ class TimelineControllerTest extends TestCase
                     'next' => null,
                 ],
             ],
-            $response->json()
+            $content,
         );
     }
 

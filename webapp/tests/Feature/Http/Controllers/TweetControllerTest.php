@@ -191,6 +191,7 @@ class TweetControllerTest extends TestCase
             ]
         );
         $response->assertStatus(201);
+        /** @var Collection<Tweet> $tweets */
         $tweets = $this->tweetRepository->findAllBy(['user_id' => $me->id->value()]);
         $this->assertSame(
             [
@@ -199,6 +200,7 @@ class TweetControllerTest extends TestCase
                     'user_id' => $me->id->value(),
                     'type' => 'normal',
                     'text' => '新規ツイート',
+                    'target_id' => null,
                     'created_at' => $tweets->first()->created_at,
                     'updated_at' => $tweets->first()->updated_at,
                 ],
@@ -241,37 +243,40 @@ class TweetControllerTest extends TestCase
                 'replies' => [
                     [
                         'id' => $thd->id->value(),
-                        'text' => $thd->text,
-                        'tweet_type' => 'reply',
                         'user' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
+                        'text' => $thd->text,
+                        'tweet_type' => 'reply',
+                        'target_id' => $ownTweet->id->value(),
                         'created_at' => $thd->created_at,
                         'updated_at' => $thd->updated_at,
                     ],
                     [
                         'id' => $snd->id->value(),
-                        'text' => $snd->text,
-                        'tweet_type' => 'reply',
                         'user' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
+                        'text' => $snd->text,
+                        'tweet_type' => 'reply',
+                        'target_id' => $ownTweet->id->value(),
                         'created_at' => $snd->created_at,
                         'updated_at' => $snd->updated_at,
                     ],
                     [
                         'id' => $fst->id->value(),
-                        'text' => $fst->text,
-                        'tweet_type' => 'reply',
                         'user' => [
                             'id' => $other->id->value(),
                             'account_name' => $other->accountName(),
                             'name' => $other->name(),
                         ],
+                        'text' => $fst->text,
+                        'tweet_type' => 'reply',
+                        'target_id' => $ownTweet->id->value(),
                         'created_at' => $fst->created_at,
                         'updated_at' => $fst->updated_at,
                     ],
@@ -311,6 +316,7 @@ class TweetControllerTest extends TestCase
                     'user_id' => $me->id->value(),
                     'type' => 'reply',
                     'text' => '返信つぶやき',
+                    'target_id' => $tweet->id->value(),
                     'created_at' => $reply->created_at,
                     'updated_at' => $reply->updated_at,
                 ],
@@ -387,6 +393,41 @@ class TweetControllerTest extends TestCase
         );
     }
 
+    public function test07_02_つぶやきIDを指定してつぶやきの詳細を取得する_リツイート(): void
+    {
+        // 準備
+        /** @var UserAssistance $userAssistance */
+        $user = $this->userAssistance->createUser();
+        $other = $this->userAssistance->createUsers(1)->first();
+        /** @var Tweet $othersTweet */
+        $othersTweet = $this->createTweets($other, 1, TweetType::Normal)->first();
+        $tweet = $this->tweetRepository->retweet($othersTweet, $user->getEntity());
+
+        // 実行
+        $response = $this->actingAs($user)->get("api/tweets/{$tweet->id->value()}");
+
+        // 検証
+        $response->assertStatus(200);
+        $content = $response->json();
+        $this->assertSame(
+            [
+                'tweet' => [
+                    'id' => $tweet->id->value(),
+                    'text' => 'つぶやきの内容',
+                    'tweet_type' => 'normal',
+                    'user' => [
+                        'id' => $user->id->value(),
+                        'account_name' => $user->accountName(),
+                        'name' => $user->name(),
+                    ],
+                    'created_at' => $tweet->created_at,
+                    'updated_at' => $tweet->updated_at,
+                ],
+            ],
+            $content
+        );
+    }
+
     private function updateTweetWithTime(Tweet $tweet, Carbon $time): Tweet
     {
         // 何かしら更新しないと更新されないので
@@ -397,7 +438,7 @@ class TweetControllerTest extends TestCase
 
     private function createTweet(TubuyakiUser $user, string $content, TweetType $type): Tweet
     {
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content);
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content, new Unidentified());
         return $this->tweetRepository->save($tweet);
     }
 

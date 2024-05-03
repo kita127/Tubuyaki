@@ -27,7 +27,7 @@ interface TweetRepository
      * @param null|int $limit 
      * @param null|array $orderBy 
      * @param string $description 
-     * @return Collection 
+     * @return Collection<Tweet>
      */
     public function findAllBy(
         array $where,
@@ -72,8 +72,10 @@ interface TweetRepository
     public function findRetweetUsers(Tweet $tweet): Collection;
 
     /**
+     * 
      * @param Tweet $tweet  リツイートするツイート
      * @param User $user    リツイートするユーザー
+     * @return Tweet 作成したリツイート
      */
-    public function retweet(Tweet $tweet, User $user): void;
+    public function retweet(Tweet $tweet, User $user): Tweet;
 }
