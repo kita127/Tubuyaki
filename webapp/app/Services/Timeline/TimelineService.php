@@ -6,12 +6,15 @@ use App\Repositories\Tweet\TweetRepository;
 use App\Repositories\User\UserRepository;
 use App\Services\TubuyakiUser;
 use App\Services\Tweet\Tweet;
+use App\Services\Tweet\TweetRetriever;
+use Illuminate\Support\Collection;
 
 class TimelineService
 {
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly TweetRepository $tweetRepository,
+        private readonly TweetRetriever $tweetRetriever,
     ) {
     }
 
@@ -37,11 +40,12 @@ class TimelineService
         } else {
             $next = null;
         }
+        /** @var Collection<Tweet> $tweets*/
         $tweets = collect([]);
         /** @var \App\Entities\Tweet $entity */
         foreach ($tweetEntities as $entity) {
-            $user = new TubuyakiUser($targetUserMap[$entity->user_id]);
-            $tweets->push(new Tweet($user, $entity));
+            $tweet = $this->tweetRetriever->createTweetFromEntity($entity);
+            $tweets->push($tweet);
         }
         return new TimelineContents($tweets, $next);
     }

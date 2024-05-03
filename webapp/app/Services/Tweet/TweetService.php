@@ -17,34 +17,8 @@ class TweetService
     public function __construct(
         private readonly TweetRepository $tweetRepository,
         private readonly UserRepository $userRepository,
+        private readonly TweetRetriever $tweetRetriever,
     ) {
-    }
-
-    private function createTweetFromEntity(EntityTweet $entity): Tweet
-    {
-        $owner = $this->userRepository->find($entity->user_id);
-        $owner = new TubuyakiUser($owner);
-        $tweet = null;
-        // TODO: ポリモフィズムで
-        switch ($entity->type) {
-            case TweetType::Normal:
-                $tweet = new NormalTweet($owner, $entity);
-                break;
-            case TweetType::Reply:
-                if (!$entity->target_id->isIdentified()) throw new LogicException();
-                $target = $this->getTweetById($entity->target_id);
-                $tweet = new Reply($owner, $entity, $target);
-                break;
-            case TweetType::Retweet:
-                $targetId = $entity->target_id;
-                if (!$targetId->isIdentified()) throw new LogicException();
-                $target = $this->getTweetById($entity->target_id);
-                $tweet = new Retweet($owner, $entity, $target);
-                break;
-            default:
-                throw new LogicException();
-        }
-        return $tweet;
     }
 
     /**
@@ -55,7 +29,7 @@ class TweetService
     public function getTweet(int $id): Tweet
     {
         $entity = $this->tweetRepository->find($id);
-        return $this->createTweetFromEntity($entity);
+        return $this->tweetRetriever->createTweetFromEntity($entity);
     }
 
     /**
@@ -107,7 +81,7 @@ class TweetService
         foreach ($replies as $tweet) {
             // TODO: Eargerローディングする
             $owner = $owners->get($tweet->user_id);
-            $target = $this->getTweetById($tweet->target_id);
+            $target = $this->tweetRetriever->getTweetById($tweet->target_id);
             $reply = new Reply(new TubuyakiUser($owner), $tweet, $target);
             $result->push($reply);
         }
@@ -122,11 +96,5 @@ class TweetService
     public function retweet(EntityTweet $tweet, TubuyakiUser $user): void
     {
         $this->tweetRepository->retweet($tweet, $user->getEntity());
-    }
-
-    public function getTweetById(Identified $id): Tweet
-    {
-        $target = $this->tweetRepository->find($id->value());
-        return $this->createTweetFromEntity($target);
     }
 }

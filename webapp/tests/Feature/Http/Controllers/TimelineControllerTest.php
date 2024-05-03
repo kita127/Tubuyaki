@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers;
 
+use App\Entities\Identifiable\Identified;
 use App\Entities\Identifiable\Unidentified;
 use App\Entities\Tweet;
 use App\Entities\TweetType;
@@ -281,9 +282,14 @@ class TimelineControllerTest extends TestCase
         );
     }
 
-    private function createTweet(TubuyakiUser $user, string $content, TweetType $type = TweetType::Normal): Tweet
-    {
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content);
+    private function createTweet(
+        TubuyakiUser $user,
+        string $content,
+        TweetType $type = TweetType::Normal,
+        ?int $targetId = null,
+    ): Tweet {
+        $targetIdObj = $targetId ? new Identified($targetId) : new Unidentified();
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content, $targetIdObj);
         return $this->tweetRepository->save($tweet);
     }
 }
