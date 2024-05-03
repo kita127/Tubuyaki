@@ -78,6 +78,7 @@ class TimelineControllerTest extends TestCase
                                 'account_name' => $user2->accountName(),
                                 'name' => $user2->name(),
                             ],
+                            'target_id' => null,
                             'created_at' => $user2Tweet->created_at,
                             'updated_at' => $user2Tweet->updated_at,
                         ],
@@ -90,6 +91,7 @@ class TimelineControllerTest extends TestCase
                                 'account_name' => $user1->accountName(),
                                 'name' => $user1->name(),
                             ],
+                            'target_id' => null,
                             'created_at' => $user1Tweet->created_at,
                             'updated_at' => $user1Tweet->updated_at,
                         ],
@@ -203,8 +205,7 @@ class TimelineControllerTest extends TestCase
         $user1->follow($user2, $this->followerRepository);  // user2をフォローする
 
         /** @var TweetService $tweetService */
-        $user1Reply = $this->createTweet($user1, 'ユーザー2のつぶやきへの返信', TweetType::Reply);
-        $this->tweetRepository->reply($user1Reply, $user2Tweet);
+        $user1Reply = $this->createTweet($user1, 'ユーザー2のつぶやきへの返信', TweetType::Reply, $user2Tweet->id->value());
 
         $this->tweetRepository->retweet($user2Tweet, $user1->getEntity());
 
@@ -220,57 +221,53 @@ class TimelineControllerTest extends TestCase
                     'tweets' => [
                         [
                             'id' => $content['contents']['tweets'][0]['id'],
+                            'text' => '',
                             'tweet_type' => 'retweet',
-                            'contents' => [
-                                'target_tweet' => $user2Tweet->id->value(),
-                            ],
                             'user' => [
                                 'id' => $user1->id->value(),
                                 'account_name' => $user1->accountName(),
                                 'name' => $user1->name(),
                             ],
+                            'target_id' => $user2Tweet->id->value(),
                             'created_at' => $content['contents']['tweets'][0]['created_at'],
                             'updated_at' => $content['contents']['tweets'][0]['updated_at'],
                         ],
                         [
                             'id' => $user1Reply->id->value(),
+                            'text' => 'ユーザー2のつぶやきへの返信',
                             'tweet_type' => 'reply',
-                            'contents' => [
-                                'text' => 'ユーザー2のつぶやきへの返信',
-                            ],
                             'user' => [
                                 'id' => $user1->id->value(),
                                 'account_name' => $user1->accountName(),
                                 'name' => $user1->name(),
                             ],
+                            'target_id' => $user2Tweet->id->value(),
                             'created_at' => $user1Reply->created_at,
                             'updated_at' => $user1Reply->updated_at,
                         ],
                         [
                             'id' => $user2Tweet->id->value(),
+                            'text' => 'ユーザー2のつぶやき',
                             'tweet_type' => 'normal',
-                            'contents' => [
-                                'text' => 'ユーザー2のつぶやき',
-                            ],
                             'user' => [
                                 'id' => $user2->id->value(),
                                 'account_name' => $user2->accountName(),
                                 'name' => $user2->name(),
                             ],
+                            'target_id' => null,
                             'created_at' => $user2Tweet->created_at,
                             'updated_at' => $user2Tweet->updated_at,
                         ],
                         [
                             'id' => $user1Tweet->id->value(),
+                            'text' => '自分のつぶやき',
                             'tweet_type' => 'normal',
-                            'contents' => [
-                                'text' => '自分のつぶやき',
-                            ],
                             'user' => [
                                 'id' => $user1->id->value(),
                                 'account_name' => $user1->accountName(),
                                 'name' => $user1->name(),
                             ],
+                            'target_id' => null,
                             'created_at' => $user1Tweet->created_at,
                             'updated_at' => $user1Tweet->updated_at,
                         ],
