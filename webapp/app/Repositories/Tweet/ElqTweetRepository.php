@@ -243,7 +243,6 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         return $elqTweet->toEntity();
     }
 
-    // TODO: 未メンテ
     public function update(Entity $tweet): Entity
     {
         if (!($tweet instanceof Tweet)) {
