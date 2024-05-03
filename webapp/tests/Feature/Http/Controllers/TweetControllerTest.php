@@ -218,18 +218,18 @@ class TweetControllerTest extends TestCase
         $me = $this->userAssistance->createUser();
         $ownTweet = $this->createTweet($me, '自分のツイート', TweetType::Normal);
         $other = $this->userAssistance->createUsers(1)->first();
-        $tweets = $this->createTweets($other, 3, TweetType::Reply);
-        foreach ($tweets as $reply) {
-            $this->createReplies($reply, $ownTweet);
+        $replies = collect([]);
+        for ($i = 0; $i < 3; $i++) {
+            $replies->push($this->createReplies($other, $ownTweet));
         }
 
         // 更新時間を変更する
         // 取得する返信は更新時間の降順になるはず
-        $fst = $tweets->get(0);
+        $fst = $replies->get(0);
         $fst = $this->updateTweetWithTime($fst, $this->now->addHour());
-        $snd = $tweets->get(1);
+        $snd = $replies->get(1);
         $snd = $this->updateTweetWithTime($snd, $this->now->addHour());
-        $thd = $tweets->get(2);
+        $thd = $replies->get(2);
         $thd = $this->updateTweetWithTime($thd, $this->now->addHour());
 
         // 実行
@@ -413,13 +413,14 @@ class TweetControllerTest extends TestCase
             [
                 'tweet' => [
                     'id' => $tweet->id->value(),
-                    'text' => 'つぶやきの内容',
-                    'tweet_type' => 'normal',
+                    'text' => '',
+                    'tweet_type' => 'retweet',
                     'user' => [
                         'id' => $user->id->value(),
                         'account_name' => $user->accountName(),
                         'name' => $user->name(),
                     ],
+                    'target_id' => $tweet->target_id->value(),
                     'created_at' => $tweet->created_at,
                     'updated_at' => $tweet->updated_at,
                 ],
@@ -457,11 +458,16 @@ class TweetControllerTest extends TestCase
     }
 
     /**
-     * @param Tweet $tweet
-     * @param Collection<Tweet> $replies
+     * 
+     * @param TubuyakiUser $user 
+     * @param Tweet $toTweet 
+     * @return void 
      */
-    private function createReplies(Tweet $reply, Tweet $toTweet): void
+    private function createReplies(TubuyakiUser $user, Tweet $toTweet): Tweet
     {
-        $this->tweetRepository->reply($reply, $toTweet);
+        $text = fake()->realText(140);
+        $targetId = $toTweet->id;
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), TweetType::Reply, $text, $targetId);
+        return $this->tweetRepository->save($tweet);
     }
 }

@@ -48,12 +48,6 @@ interface TweetRepository
     public function findIn(array $whereIn, ?int $offset = null, ?int $limit = null, ?array $orderBy = null, string $direction = 'asc'): Collection;
 
     /**
-     * @param Tweet $reply  返信つぶやき
-     * @param Tweet $toTweet 返信対象のつぶやき
-     */
-    public function reply(Tweet $reply, Tweet $toTweet): void;
-
-    /**
      * $tweetのすべての返信を取得する
      * デフォルトでは更新時間の降順で返される
      * @param Tweet $tweet

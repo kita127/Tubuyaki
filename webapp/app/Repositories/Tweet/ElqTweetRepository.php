@@ -150,17 +150,6 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         return $result;
     }
 
-
-    /**
-     * @param Tweet $reply  返信つぶやき
-     * @param Tweet $toTweet 返信対象のつぶやき
-     */
-    public function reply(Tweet $reply, Tweet $toTweet): void
-    {
-        $r = new ElqReply(['tweet_id' => $reply->id->value(), 'to_tweet_id' => $toTweet->id->value()]);
-        $r->save();
-    }
-
     /**
      * $tweetのすべての返信を取得する
      * デフォルトでは更新時間の降順で返される
@@ -248,11 +237,13 @@ class ElqTweetRepository implements TweetRepository, Modifiable
                 'tweet_id' => $newId,
                 'to_tweet_id' => $tweet->target_id->value(),
             ]);
+            $relation->save();
         }
 
         return $elqTweet->toEntity();
     }
 
+    // TODO: 未メンテ
     public function update(Entity $tweet): Entity
     {
         if (!($tweet instanceof Tweet)) {

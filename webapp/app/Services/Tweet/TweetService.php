@@ -105,8 +105,10 @@ class TweetService
         $result = collect([]);
         /** @var EntityTweet $tweet */
         foreach ($replies as $tweet) {
+            // TODO: Eargerローディングする
             $owner = $owners->get($tweet->user_id);
-            $reply = new Reply(new TubuyakiUser($owner), $tweet);
+            $target = $this->getTweetById($tweet->target_id);
+            $reply = new Reply(new TubuyakiUser($owner), $tweet, $target);
             $result->push($reply);
         }
         return $result;
@@ -115,7 +117,6 @@ class TweetService
     public function reply(EntityTweet $targetTweet, TubuyakiUser $user, string $text): void
     {
         $reply = $this->post($user, $text, TweetType::Reply, $targetTweet->id);
-        $this->tweetRepository->reply($reply, $targetTweet);
     }
 
     public function retweet(EntityTweet $tweet, TubuyakiUser $user): void
