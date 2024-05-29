@@ -40,7 +40,7 @@ class MockUserRepository implements UserRepository
 
     public function save(User $user): User
     {
-        if ($user->id && isset(static::$dummyRecords[$user->id->value()])) {
+        if ($user->id->isIdentified() && isset(static::$dummyRecords[$user->id->value()])) {
             // update
             static::$dummyRecords[$user->id->value()] = $user;
             return $user;
