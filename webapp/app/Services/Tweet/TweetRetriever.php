@@ -79,6 +79,7 @@ class TweetRetriever
         $tweets = collect([]);
         foreach ($entities as $entity) {
             /** @var EntityTweet $entity */
+            // TODO: これN+1なので直す
             $t = $this->createTweetFromEntity($entity);
             $tweets->put($t->id()->value(), $t);
         }
