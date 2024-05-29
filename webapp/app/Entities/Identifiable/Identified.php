@@ -18,6 +18,12 @@ class Identified implements Id
         return true;
     }
 
+    public function equal(Id $id): bool
+    {
+        if (!$id->isIdentified()) return false;
+        return $this->value() === $id->value();
+    }
+
     public function __toString(): string
     {
         return (string) $this->value;

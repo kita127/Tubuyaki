@@ -16,6 +16,11 @@ class Unidentified implements Id
         return false;
     }
 
+    public function equal(Id $id): bool
+    {
+        return !$id->isIdentified;
+    }
+
     public function __toString(): string
     {
         return '';

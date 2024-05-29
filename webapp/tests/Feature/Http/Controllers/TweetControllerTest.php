@@ -10,16 +10,20 @@ use App\Services\TubuyakiUser;
 use App\Entities\Tweet;
 use App\Entities\TweetType;
 use App\Repositories\Tweet\TweetRepository;
+use App\Repositories\User\UserRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Tests\Lib\TweetCreator;
 
 class TweetControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
     private Carbon $now;
+    private readonly UserRepository $userRepository;
     private readonly TweetRepository $tweetRepository;
     private readonly UserAssistance $userAssistance;
+    private readonly TweetCreator $tweetCreator;
 
     protected function setUp(): void
     {
@@ -27,8 +31,10 @@ class TweetControllerTest extends TestCase
         $this->now = new Carbon('2024/07/29 12:00:00');
         Carbon::setTestNow($this->now);
 
+        $this->userRepository = app()->make(UserRepository::class);
         $this->tweetRepository = app()->make(TweetRepository::class);
         $this->userAssistance = app()->make(UserAssistance::class);
+        $this->tweetCreator = new TweetCreator($this->userRepository, $this->tweetRepository);
     }
 
     protected function tearDown(): void
@@ -46,7 +52,7 @@ class TweetControllerTest extends TestCase
         // 準備
         /** @var UserAssistance $userAssistance */
         $user = $this->userAssistance->createUser();
-        $tweet = $this->createTweet($user, 'つぶやきの内容', TweetType::Normal);
+        $tweet = $this->tweetCreator->create($user, 'つぶやきの内容', TweetType::Normal);
 
         // 実行
         $response = $this->actingAs($user)->get("api/users/me/tweets");
@@ -78,7 +84,7 @@ class TweetControllerTest extends TestCase
         // 準備
         /** @var UserAssistance $userAssistance */
         $user = $this->userAssistance->createUser();
-        $expected = $this->createTweets($user, 30, TweetType::Normal);
+        $expected = $this->tweetCreator->createTweets($user, 30, TweetType::Normal);
         $expected = $expected->sortByDesc(function (Tweet $item, $key) {
             return $item->updated_at . $item->id->value();
         });
@@ -117,7 +123,7 @@ class TweetControllerTest extends TestCase
         /** @var UserAssistance $userAssistance */
         $me = $this->userAssistance->createUser();
         $other = $this->userAssistance->createUser('other', '他人ユーザ', 'other@example.net', 'password');
-        $tweet = $this->createTweet($other, '他人のつぶやき', TweetType::Normal);
+        $tweet = $this->tweetCreator->create($other, '他人のつぶやき', TweetType::Normal);
 
         // 実行
         $response = $this->actingAs($me)->get("api/users/{$other->id->value()}/tweets");
@@ -150,7 +156,7 @@ class TweetControllerTest extends TestCase
         /** @var UserAssistance $userAssistance */
         $me = $this->userAssistance->createUser();
         $other = $this->userAssistance->createUser('other', '他人ユーザ', 'other@example.net', 'password');
-        $expected = $this->createTweets($other, 30, TweetType::Normal);
+        $expected = $this->tweetCreator->createTweets($other, 30, TweetType::Normal);
         $expected = $expected->sortByDesc(function (Tweet $item, $key) {
             return $item->updated_at . $item->id->value();
         });
@@ -216,7 +222,7 @@ class TweetControllerTest extends TestCase
     {
         // 準備
         $me = $this->userAssistance->createUser();
-        $ownTweet = $this->createTweet($me, '自分のツイート', TweetType::Normal);
+        $ownTweet = $this->tweetCreator->create($me, '自分のツイート', TweetType::Normal);
         $other = $this->userAssistance->createUsers(1)->first();
         $replies = collect([]);
         for ($i = 0; $i < 3; $i++) {
@@ -295,7 +301,7 @@ class TweetControllerTest extends TestCase
         $me = $this->userAssistance->createUser();
         $other = $this->userAssistance->createUsers(1)->first();
         /** @var Tweet $tweet */
-        $tweet = $this->createTweets($other, 1, TweetType::Normal)->first();
+        $tweet = $this->tweetCreator->createTweets($other, 1, TweetType::Normal)->first();
 
         // 実行
         $response = $this->actingAs($me)->post(
@@ -334,7 +340,7 @@ class TweetControllerTest extends TestCase
         $me = $this->userAssistance->createUser();
         $other = $this->userAssistance->createUsers(1)->first();
         /** @var Tweet $othersTweet */
-        $othersTweet = $this->createTweets($other, 1, TweetType::Normal)->first();
+        $othersTweet = $this->tweetCreator->createTweets($other, 1, TweetType::Normal)->first();
 
         // 実行
         $response = $this->actingAs($me)->post("api/tweets/{$othersTweet->id->value()}/retweet", []);
@@ -361,12 +367,32 @@ class TweetControllerTest extends TestCase
         $this->assertSame('retweet', $tweet->type->value);
     }
 
+    /**
+     * TweetController::retweet
+     */
+    public function test06_02_一度リツイートしたつぶやきに対してリツイートできない(): void
+    {
+        // 準備
+        $me = $this->userAssistance->createUser();
+        $other = $this->userAssistance->createUsers(1)->first();
+        /** @var Tweet $othersTweet */
+        $othersTweet = $this->tweetCreator->createTweets($other, 1, TweetType::Normal)->first();
+        $this->tweetCreator->create($me, '', TweetType::Retweet, $othersTweet->id);
+
+        // 実行
+        $response = $this->actingAs($me)->post("api/tweets/{$othersTweet->id->value()}/retweet", []);
+
+        // 検証
+        $response->assertBadRequest();
+        $this->assertSame('同じつぶやきに再度リツイートしています', $response->getContent());
+    }
+
     public function test07_01_つぶやきIDを指定してつぶやきの詳細を取得する(): void
     {
         // 準備
         /** @var UserAssistance $userAssistance */
         $user = $this->userAssistance->createUser();
-        $tweet = $this->createTweet($user, 'つぶやきの内容', TweetType::Normal);
+        $tweet = $this->tweetCreator->create($user, 'つぶやきの内容', TweetType::Normal);
 
         // 実行
         $response = $this->actingAs($user)->get("api/tweets/{$tweet->id}");
@@ -401,7 +427,7 @@ class TweetControllerTest extends TestCase
         $user = $this->userAssistance->createUser();
         $other = $this->userAssistance->createUsers(1)->first();
         /** @var Tweet $othersTweet */
-        $othersTweet = $this->createTweets($other, 1, TweetType::Normal)->first();
+        $othersTweet = $this->tweetCreator->createTweets($other, 1, TweetType::Normal)->first();
         $tweet = $this->tweetRepository->retweet($othersTweet, $user->getEntity());
 
         // 実行
@@ -442,26 +468,6 @@ class TweetControllerTest extends TestCase
         );
         Carbon::setTestNow($time);
         return $this->tweetRepository->save($updated);
-    }
-
-    private function createTweet(TubuyakiUser $user, string $content, TweetType $type): Tweet
-    {
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content, new Unidentified());
-        return $this->tweetRepository->save($tweet);
-    }
-
-    /**
-     * @return Collection<Tweet>
-     */
-    private function createTweets(TubuyakiUser $user, int $count, TweetType $type): Collection
-    {
-        $tweets = collect([]);
-        for ($i = 0; $i < $count; $i++) {
-            $text = fake()->realText(140);
-            $t = $this->createTweet($user, $text, $type);
-            $tweets->push($t);
-        }
-        return $tweets;
     }
 
     /**

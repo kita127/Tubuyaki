@@ -11,7 +11,7 @@ class Reply implements Arrayable
     public static function create(\App\Services\Tweet\Reply $reply): static
     {
         $owner = User::create($reply->owner);
-        $tweet = $reply->tweet;
+        $tweet = $reply->entity;
 
         return new Reply(
             id: $tweet->id->value(),

@@ -93,8 +93,22 @@ class TweetService
         $reply = $this->post($user, $text, TweetType::Reply, $targetTweet->id);
     }
 
-    public function retweet(EntityTweet $tweet, TubuyakiUser $user): void
+    /**
+     * 
+     * @param int $tweetId リツイートするつぶやきのID
+     * @param TubuyakiUser $user 自分
+     * @return void 
+     */
+    public function retweet(int $tweetId, TubuyakiUser $user): void
     {
-        $this->tweetRepository->retweet($tweet, $user->getEntity());
+        $tweet = $this->tweetRetriever->getTweetById(new Identified($tweetId));
+        if ($tweet->isOwner($user)) {
+            throw new LogicException('自分のつぶやきにはリツイートできません');
+        }
+        $exists = $this->tweetRetriever->findRetweetByTargetId($user, $tweet->id());
+        if ($exists) {
+            throw new LogicException('同じつぶやきに再度リツイートしています');
+        }
+        $this->tweetRepository->retweet($tweet->entity(), $user->getEntity());
     }
 }

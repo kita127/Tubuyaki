@@ -134,4 +134,9 @@ class TubuyakiUser implements Authenticatable, Arrayable
         $followRelation = new Follower(new Unidentified(), $this->id->value(), $target->id->value());
         $repo->save($followRelation);
     }
+
+    public function same(TubuyakiUser $user): bool
+    {
+        return $this->id->equal($user->id);
+    }
 }

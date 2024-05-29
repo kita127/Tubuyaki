@@ -2,11 +2,13 @@
 
 namespace App\Entities\Identifiable;
 
-interface Id 
+interface Id
 {
     public function value(): int;
 
     public function isIdentified(): bool;
 
     public function __toString(): string;
+
+    public function equal(Id $id): bool;
 }

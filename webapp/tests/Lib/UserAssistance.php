@@ -26,7 +26,7 @@ class UserAssistance
     }
 
     /**
-     * @return Collection<TubuyakiUser>
+     * @return Collection<int, TubuyakiUser>
      */
     public function createUsers(int $count): Collection
     {

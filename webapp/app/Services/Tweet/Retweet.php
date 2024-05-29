@@ -34,4 +34,14 @@ class Retweet implements Tweet
             $this->entity->updated_at,
         );
     }
+
+    public function isOwner(TubuyakiUser $user): bool
+    {
+        return $this->owner->same($user);
+    }
+
+    public function entity(): EntitiesTweet
+    {
+        return $this->entity;
+    }
 }
