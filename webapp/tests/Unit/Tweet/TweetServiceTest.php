@@ -16,7 +16,7 @@ use App\Services\Tweet\TweetRetriever;
 use App\Services\Tweet\TweetService;
 use Tests\Lib\UserAssistance;
 
-class RetweetTest extends TestCase
+class TweetServiceTest extends TestCase
 {
     private readonly UserRepository $userRepository;
     private readonly TweetRepository $tweetRepository;
