@@ -40,7 +40,6 @@ class TweetServiceTest extends TestCase
         $this->tweetService->retweet($tweet->id->value(), $me);
     }
 
-    // TODO: FeatureTestも書く
     public function test01_02_一度リツイートしたつぶやきに対してリツイートできない(): void
     {
         $users = $this->userAssistance->createUsers(2);

@@ -14,12 +14,11 @@ use RuntimeException;
 
 class MockTweetRepository implements TweetRepository
 {
-    // TODO: staticにする
     /**
      * @var array<int, Tweet>
      */
-    private array $dummyRecords = [];
-    private int $autoIncrement = 1;
+    private static array $dummyRecords = [];
+    private static int $autoIncrement = 1;
 
     /**
      * @param Tweet $tweet
@@ -30,8 +29,8 @@ class MockTweetRepository implements TweetRepository
         if ($tweet->id->isIdentified()) {
             $id = $tweet->id;
         } else {
-            $id = new Identified($this->autoIncrement);
-            $this->autoIncrement++;
+            $id = new Identified(static::$autoIncrement);
+            static::$autoIncrement++;
         }
         $newTweet = new Tweet(
             id: $id,
@@ -42,7 +41,7 @@ class MockTweetRepository implements TweetRepository
             created_at: $tweet->created_at,
             updated_at: $tweet->updated_at,
         );
-        $this->dummyRecords[$id->value()] = $newTweet;
+        static::$dummyRecords[$id->value()] = $newTweet;
         return $newTweet;
     }
 
@@ -52,7 +51,7 @@ class MockTweetRepository implements TweetRepository
      */
     public function find(int $id): Tweet
     {
-        return $this->dummyRecords[$id] ?? throw new LogicException('つぶやきがありません');
+        return static::$dummyRecords[$id] ?? throw new LogicException('つぶやきがありません');
     }
 
     /**
@@ -120,7 +119,7 @@ class MockTweetRepository implements TweetRepository
     public function retweet(Tweet $tweet, User $user): Tweet
     {
         $newTweet = new Tweet(
-            id: new Identified($this->autoIncrement),
+            id: new Identified(static::$autoIncrement),
             user_id: $user->id->value(),
             type: TweetType::Retweet,
             text: '',
@@ -128,8 +127,8 @@ class MockTweetRepository implements TweetRepository
             created_at: Carbon::now()->format('yyyy-mm-dd hh:ii:ss'),
             updated_at: Carbon::now()->format('yyyy-mm-dd hh:ii:ss'),
         );
-        $this->dummyRecords[$newTweet->id->value()] = $newTweet;
-        $this->autoIncrement++;
+        static::$dummyRecords[$newTweet->id->value()] = $newTweet;
+        static::$autoIncrement++;
         return $newTweet;
     }
 
@@ -141,7 +140,7 @@ class MockTweetRepository implements TweetRepository
      */
     public function findRetweet(User $user, Id $targetId): ?Tweet
     {
-        foreach ($this->dummyRecords as $tweet) {
+        foreach (static::$dummyRecords as $tweet) {
             /** @var Tweet $tweet */
             if (
                 $tweet->user_id === $user->id->value()
