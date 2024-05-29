@@ -11,27 +11,37 @@ class Reply implements Tweet
 {
     public function __construct(
         public readonly TubuyakiUser $owner,
-        public readonly EntitiesTweet $tweet,
+        public readonly EntitiesTweet $entity,
         public readonly Tweet $target,
     ) {
     }
 
     public function id(): Id
     {
-        return $this->tweet->id;
+        return $this->entity->id;
     }
 
     public function createResponse(): Response
     {
         $targetId = $this->target->id();
         return new Response(
-            $this->tweet->id->value(),
+            $this->entity->id->value(),
             \App\Http\Responses\User::create($this->owner),
-            $this->tweet->type,
-            $this->tweet->text,
+            $this->entity->type,
+            $this->entity->text,
             $targetId->isIdentified() ? $targetId->value() : null,
-            $this->tweet->created_at,
-            $this->tweet->updated_at,
+            $this->entity->created_at,
+            $this->entity->updated_at,
         );
+    }
+
+    public function isOwner(TubuyakiUser $user): bool
+    {
+        return $this->owner->same($user);
+    }
+
+    public function entity(): EntitiesTweet
+    {
+        return $this->entity;
     }
 }

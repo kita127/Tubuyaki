@@ -10,8 +10,7 @@ use App\Services\TubuyakiUser;
 class NormalTweet implements Tweet
 {
     public function __construct(
-        // TODO: user -> ownerにしたい
-        public readonly TubuyakiUser $user,
+        public readonly TubuyakiUser $owner,
         public readonly EntitiesTweet $entity,
     ) {
     }
@@ -25,12 +24,22 @@ class NormalTweet implements Tweet
     {
         return new Response(
             $this->entity->id->value(),
-            \App\Http\Responses\User::create($this->user),
+            \App\Http\Responses\User::create($this->owner),
             $this->entity->type,
             $this->entity->text,
             null,
             $this->entity->created_at,
             $this->entity->updated_at,
         );
+    }
+
+    public function isOwner(TubuyakiUser $user): bool
+    {
+        return $this->owner->same($user);
+    }
+
+    public function entity(): EntitiesTweet
+    {
+        return $this->entity;
     }
 }

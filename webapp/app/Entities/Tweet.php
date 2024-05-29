@@ -3,8 +3,6 @@
 namespace App\Entities;
 
 use App\Entities\Identifiable\Id;
-use App\Services\TubuyakiUser;
-use LogicException;
 
 class Tweet extends Entity
 {
@@ -17,13 +15,6 @@ class Tweet extends Entity
         public readonly ?string $created_at = null,
         public readonly ?string $updated_at = null,
     ) {
-    }
-
-    // TODO: EntityにはtoArray以外のロジックは実装しない
-    public function isOwner(TubuyakiUser $user): bool
-    {
-        if (!$user->id->isIdentified()) throw new LogicException('未登録のユーザーです');
-        return $this->user_id === $user->id->value();
     }
 
     public function toArray(): array

@@ -19,6 +19,7 @@ class TweetServiceTest extends TestCase
     private readonly UserRepository $userRepository;
     private readonly TweetRepository $tweetRepository;
     private readonly UserAssistance $userAssistance;
+    private readonly TweetRetriever $tweetRetriever;
     private readonly TweetCreator $tweetCreator;
 
     protected function setUp(): void
@@ -26,6 +27,7 @@ class TweetServiceTest extends TestCase
         $this->tweetRepository = new MockTweetRepository();
         $this->userRepository = new MockUserRepository();
         $this->userAssistance = new UserAssistance($this->userRepository);
+        $this->tweetRetriever = new TweetRetriever($this->tweetRepository, $this->userRepository);
         $this->tweetCreator = new TweetCreator($this->userRepository, $this->tweetRepository);
     }
 
@@ -37,8 +39,8 @@ class TweetServiceTest extends TestCase
 
         $users = $this->userAssistance->createUsers(1);
         $me = $users->shift();
-        $targetTweet = $this->tweetCreator->create($me, '自分のつぶやき', TweetType::Normal);
-        $service->retweet($targetTweet, $me);
+        $tweet = $this->tweetCreator->create($me, '自分のつぶやき', TweetType::Normal);
+        $service->retweet($tweet->id->value(), $me);
     }
 
     // TODO: FeatureTestも書く
@@ -49,17 +51,16 @@ class TweetServiceTest extends TestCase
         $users = $this->userAssistance->createUsers(2);
         $me = $users->shift();
         $other = $users->shift();
-        $targetTweet = $this->tweetCreator->create($other, '他人のつぶやき', TweetType::Normal);
-        $service->retweet($targetTweet, $me);
+        $tweet = $this->tweetCreator->create($other, '他人のつぶやき', TweetType::Normal);
+        $service->retweet($tweet->id->value(), $me);
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('同じつぶやきに再度リツイートしています');
-        $service->retweet($targetTweet, $me);
+        $service->retweet($tweet->id->value(), $me);
     }
 
     private function createService(): TweetService
     {
-        $retriver = new TweetRetriever($this->tweetRepository, $this->userRepository);
-        return new TweetService($this->tweetRepository, $this->userRepository, $retriver);
+        return new TweetService($this->tweetRepository, $this->userRepository, $this->tweetRetriever);
     }
 }
