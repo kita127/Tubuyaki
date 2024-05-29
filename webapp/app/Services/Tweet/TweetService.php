@@ -2,6 +2,7 @@
 
 namespace App\Services\Tweet;
 
+use App\Entities\Identifiable\Identified;
 use App\Entities\Identifiable\Unidentified;
 use App\Repositories\Tweet\TweetRepository;
 use App\Services\TubuyakiUser;
@@ -9,12 +10,14 @@ use Illuminate\Support\Collection;
 use App\Entities\Tweet as EntityTweet;
 use App\Entities\TweetType;
 use App\Repositories\User\UserRepository;
+use LogicException;
 
 class TweetService
 {
     public function __construct(
         private readonly TweetRepository $tweetRepository,
         private readonly UserRepository $userRepository,
+        private readonly TweetRetriever $tweetRetriever,
     ) {
     }
 
@@ -26,9 +29,7 @@ class TweetService
     public function getTweet(int $id): Tweet
     {
         $entity = $this->tweetRepository->find($id);
-        $owner = $this->userRepository->find($entity->user_id);
-        $owner = new TubuyakiUser($owner);
-        return new Tweet($owner, $entity);
+        return $this->tweetRetriever->createTweetFromEntity($entity);
     }
 
     /**
@@ -59,9 +60,10 @@ class TweetService
      * @param string $text
      * @return EntityTweet
      */
-    public function post(TubuyakiUser $user, string $text, TweetType $tweetType): EntityTweet
+    public function post(TubuyakiUser $user, string $text, TweetType $tweetType, ?Identified $targetId = null): EntityTweet
     {
-        $tweet = new EntityTweet(new Unidentified(), $user->id->value(), $tweetType, $text);
+        $targetId = $targetId ?? new Unidentified();
+        $tweet = new EntityTweet(new Unidentified(), $user->id->value(), $tweetType, $text, $targetId);
         return $this->tweetRepository->save($tweet);
     }
 
@@ -77,17 +79,18 @@ class TweetService
         $result = collect([]);
         /** @var EntityTweet $tweet */
         foreach ($replies as $tweet) {
+            // TODO: Eargerローディングする
             $owner = $owners->get($tweet->user_id);
-            $reply = new Reply(new TubuyakiUser($owner), $tweet);
+            $target = $this->tweetRetriever->getTweetById($tweet->target_id);
+            $reply = new Reply(new TubuyakiUser($owner), $tweet, $target);
             $result->push($reply);
         }
         return $result;
     }
 
-    public function reply(EntityTweet $tweet, TubuyakiUser $user, string $text): void
+    public function reply(EntityTweet $targetTweet, TubuyakiUser $user, string $text): void
     {
-        $reply = $this->post($user, $text, TweetType::Reply);
-        $this->tweetRepository->reply($reply, $tweet);
+        $reply = $this->post($user, $text, TweetType::Reply, $targetTweet->id);
     }
 
     public function retweet(EntityTweet $tweet, TubuyakiUser $user): void

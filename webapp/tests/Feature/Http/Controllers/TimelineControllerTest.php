@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers;
 
+use App\Entities\Identifiable\Identified;
 use App\Entities\Identifiable\Unidentified;
 use App\Entities\Tweet;
 use App\Entities\TweetType;
@@ -77,6 +78,7 @@ class TimelineControllerTest extends TestCase
                                 'account_name' => $user2->accountName(),
                                 'name' => $user2->name(),
                             ],
+                            'target_id' => null,
                             'created_at' => $user2Tweet->created_at,
                             'updated_at' => $user2Tweet->updated_at,
                         ],
@@ -89,6 +91,7 @@ class TimelineControllerTest extends TestCase
                                 'account_name' => $user1->accountName(),
                                 'name' => $user1->name(),
                             ],
+                            'target_id' => null,
                             'created_at' => $user1Tweet->created_at,
                             'updated_at' => $user1Tweet->updated_at,
                         ],
@@ -202,18 +205,33 @@ class TimelineControllerTest extends TestCase
         $user1->follow($user2, $this->followerRepository);  // user2をフォローする
 
         /** @var TweetService $tweetService */
-        $user1Reply = $this->createTweet($user1, 'ユーザー2のつぶやきへの返信', TweetType::Reply);
-        $this->tweetRepository->reply($user1Reply, $user2Tweet);
+        $user1Reply = $this->createTweet($user1, 'ユーザー2のつぶやきへの返信', TweetType::Reply, $user2Tweet->id->value());
+
+        $this->tweetRepository->retweet($user2Tweet, $user1->getEntity());
 
         // 実行
         $response = $this->actingAs($user1)->get("api/users/{$user1->id->value()}/timeline");
 
         // 検証
         $response->assertStatus(200);
+        $content = $response->json();
         $this->assertSame(
             [
                 'contents' => [
                     'tweets' => [
+                        [
+                            'id' => $content['contents']['tweets'][0]['id'],
+                            'text' => '',
+                            'tweet_type' => 'retweet',
+                            'user' => [
+                                'id' => $user1->id->value(),
+                                'account_name' => $user1->accountName(),
+                                'name' => $user1->name(),
+                            ],
+                            'target_id' => $user2Tweet->id->value(),
+                            'created_at' => $content['contents']['tweets'][0]['created_at'],
+                            'updated_at' => $content['contents']['tweets'][0]['updated_at'],
+                        ],
                         [
                             'id' => $user1Reply->id->value(),
                             'text' => 'ユーザー2のつぶやきへの返信',
@@ -223,6 +241,7 @@ class TimelineControllerTest extends TestCase
                                 'account_name' => $user1->accountName(),
                                 'name' => $user1->name(),
                             ],
+                            'target_id' => $user2Tweet->id->value(),
                             'created_at' => $user1Reply->created_at,
                             'updated_at' => $user1Reply->updated_at,
                         ],
@@ -235,6 +254,7 @@ class TimelineControllerTest extends TestCase
                                 'account_name' => $user2->accountName(),
                                 'name' => $user2->name(),
                             ],
+                            'target_id' => null,
                             'created_at' => $user2Tweet->created_at,
                             'updated_at' => $user2Tweet->updated_at,
                         ],
@@ -247,6 +267,7 @@ class TimelineControllerTest extends TestCase
                                 'account_name' => $user1->accountName(),
                                 'name' => $user1->name(),
                             ],
+                            'target_id' => null,
                             'created_at' => $user1Tweet->created_at,
                             'updated_at' => $user1Tweet->updated_at,
                         ],
@@ -254,13 +275,18 @@ class TimelineControllerTest extends TestCase
                     'next' => null,
                 ],
             ],
-            $response->json()
+            $content,
         );
     }
 
-    private function createTweet(TubuyakiUser $user, string $content, TweetType $type = TweetType::Normal): Tweet
-    {
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content);
+    private function createTweet(
+        TubuyakiUser $user,
+        string $content,
+        TweetType $type = TweetType::Normal,
+        ?int $targetId = null,
+    ): Tweet {
+        $targetIdObj = $targetId ? new Identified($targetId) : new Unidentified();
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content, $targetIdObj);
         return $this->tweetRepository->save($tweet);
     }
 }

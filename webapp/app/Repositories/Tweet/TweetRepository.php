@@ -27,7 +27,7 @@ interface TweetRepository
      * @param null|int $limit 
      * @param null|array $orderBy 
      * @param string $description 
-     * @return Collection 
+     * @return Collection<Tweet>
      */
     public function findAllBy(
         array $where,
@@ -48,12 +48,6 @@ interface TweetRepository
     public function findIn(array $whereIn, ?int $offset = null, ?int $limit = null, ?array $orderBy = null, string $direction = 'asc'): Collection;
 
     /**
-     * @param Tweet $reply  返信つぶやき
-     * @param Tweet $toTweet 返信対象のつぶやき
-     */
-    public function reply(Tweet $reply, Tweet $toTweet): void;
-
-    /**
      * $tweetのすべての返信を取得する
      * デフォルトでは更新時間の降順で返される
      * @param Tweet $tweet
@@ -72,8 +66,10 @@ interface TweetRepository
     public function findRetweetUsers(Tweet $tweet): Collection;
 
     /**
+     * 
      * @param Tweet $tweet  リツイートするツイート
      * @param User $user    リツイートするユーザー
+     * @return Tweet 作成したリツイート
      */
-    public function retweet(Tweet $tweet, User $user): void;
+    public function retweet(Tweet $tweet, User $user): Tweet;
 }

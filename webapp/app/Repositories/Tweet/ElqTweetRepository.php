@@ -64,7 +64,7 @@ class ElqTweetRepository implements TweetRepository, Modifiable
      * @param null|int $limit 
      * @param null|array $orderBy 
      * @param string $description 
-     * @return Collection 
+     * @return Collection<Tweet>
      */
     public function findAllBy(
         array $where,
@@ -150,17 +150,6 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         return $result;
     }
 
-
-    /**
-     * @param Tweet $reply  返信つぶやき
-     * @param Tweet $toTweet 返信対象のつぶやき
-     */
-    public function reply(Tweet $reply, Tweet $toTweet): void
-    {
-        $r = new ElqReply(['tweet_id' => $reply->id->value(), 'to_tweet_id' => $toTweet->id->value()]);
-        $r->save();
-    }
-
     /**
      * $tweetのすべての返信を取得する
      * デフォルトでは更新時間の降順で返される
@@ -208,16 +197,16 @@ class ElqTweetRepository implements TweetRepository, Modifiable
     }
 
     /**
+     * 
      * @param Tweet $tweet  リツイートするツイート
      * @param User $user    リツイートするユーザー
+     * @return Tweet 作成したリツイート
      */
-    public function retweet(Tweet $tweet, User $user): void
+    public function retweet(Tweet $tweet, User $user): Tweet
     {
-        $myTweet = new Tweet(new Unidentified(), $user->id->value(), TweetType::Retweet, '');
+        $myTweet = new Tweet(new Unidentified(), $user->id->value(), TweetType::Retweet, '', $tweet->id);
         /** @var Tweet $myTweet */
-        $myTweet = $this->create($myTweet);
-        $relation = new ElqRetweet(['tweet_id' => $myTweet->id->value(), 'target_id' => $tweet->id->value()]);
-        $relation->save();
+        return $this->create($myTweet);
     }
 
     public function create(Entity $tweet): Entity
@@ -234,6 +223,23 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         $elqTweetDetail->tweet_type_id = $type->id;
         $elqTweetDetail->text = $tweet->text;
         $elqTweet->tweetDetail()->save($elqTweetDetail);
+        $elqTweet->refresh();
+        $newId = $elqTweet->id;
+
+        if ($tweet->type === TweetType::Retweet) {
+            $relation = new ElqRetweet([
+                'tweet_id' => $newId,
+                'target_id' => $tweet->target_id->value()
+            ]);
+            $relation->save();
+        } elseif ($tweet->type === TweetType::Reply) {
+            $relation = new ElqReply([
+                'tweet_id' => $newId,
+                'to_tweet_id' => $tweet->target_id->value(),
+            ]);
+            $relation->save();
+        }
+
         return $elqTweet->toEntity();
     }
 

@@ -15,7 +15,7 @@ abstract class Entity implements Arrayable
     public function toArray(): array
     {
         $array = (array) $this;
-        $array['id'] = $this->id->value();
+        $array['id'] = $this->id->isIdentified() ? $this->id->value() : null;
         return $array;
     }
 }
