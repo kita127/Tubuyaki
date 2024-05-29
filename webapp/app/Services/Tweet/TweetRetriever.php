@@ -9,6 +9,7 @@ use App\Entities\Tweet as EntityTweet;
 use App\Entities\TweetType;
 use App\Repositories\User\UserRepository;
 use App\Services\TubuyakiUser;
+use Illuminate\Support\Collection;
 use LogicException;
 
 class TweetRetriever
@@ -63,5 +64,24 @@ class TweetRetriever
         $retweet = $this->tweetRepository->findRetweet($user->getEntity(), $targetId);
         if (is_null($retweet)) return null;
         return $this->createTweetFromEntity($retweet);
+    }
+
+    /**
+     * 
+     * @param string $key 
+     * @param Collection<Id> $idList 
+     * @return Collection<int, Tweet> 
+     */
+    public function findIn(string $key, Collection $idList): Collection
+    {
+        $array = $idList->map(fn (Id $id) => $id->value())->all();
+        $entities = $this->tweetRepository->findIn([$key => $array]);
+        $tweets = collect([]);
+        foreach ($entities as $entity) {
+            /** @var EntityTweet $entity */
+            $t = $this->createTweetFromEntity($entity);
+            $tweets->put($t->id()->value(), $t);
+        }
+        return $tweets;
     }
 }

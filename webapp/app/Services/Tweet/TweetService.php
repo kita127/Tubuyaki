@@ -68,7 +68,7 @@ class TweetService
     }
 
     /**
-     * @param EntityTweet $tweet
+     * @param EntityTweet $tweet 返信元のぶつやき
      * @return Collection<Reply>
      */
     public function getReplies(EntityTweet $tweet): Collection
@@ -76,16 +76,12 @@ class TweetService
         /** @var Collection<EntityTweet> $replies */
         $replies = $this->tweetRepository->findAllReplies($tweet);
         $owners = $this->userRepository->findIn(['id' => $replies->pluck('user_id')->all()]);
-        $result = collect([]);
-        /** @var EntityTweet $tweet */
-        foreach ($replies as $tweet) {
-            // TODO: Eargerローディングする
-            $owner = $owners->get($tweet->user_id);
-            $target = $this->tweetRetriever->getTweetById($tweet->target_id);
-            $reply = new Reply(new TubuyakiUser($owner), $tweet, $target);
-            $result->push($reply);
-        }
-        return $result;
+        $targetTweet = $this->tweetRetriever->createTweetFromEntity($tweet);
+
+        return $replies->map(function (EntityTweet $replyEntity) use ($owners, $targetTweet) {
+            $owner = $owners->get($replyEntity->user_id);
+            return new Reply(new TubuyakiUser($owner), $replyEntity, $targetTweet);
+        });
     }
 
     public function reply(EntityTweet $targetTweet, TubuyakiUser $user, string $text): void
