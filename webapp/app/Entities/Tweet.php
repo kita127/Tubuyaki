@@ -19,6 +19,7 @@ class Tweet extends Entity
     ) {
     }
 
+    // TODO: EntityにはtoArray以外のロジックは実装しない
     public function isOwner(TubuyakiUser $user): bool
     {
         if (!$user->id->isIdentified()) throw new LogicException('未登録のユーザーです');

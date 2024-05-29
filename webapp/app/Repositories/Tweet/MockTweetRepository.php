@@ -2,14 +2,19 @@
 
 namespace App\Repositories\Tweet;
 
+use App\Entities\Identifiable\Id;
 use App\Entities\Identifiable\Identified;
 use App\Entities\Tweet;
+use App\Entities\TweetType;
 use App\Entities\User;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use LogicException;
 use RuntimeException;
 
 class MockTweetRepository implements TweetRepository
 {
+    // TODO: staticにする
     /**
      * @var array<int, Tweet>
      */
@@ -47,7 +52,7 @@ class MockTweetRepository implements TweetRepository
      */
     public function find(int $id): Tweet
     {
-        throw new RuntimeException('unimplemented');
+        return $this->dummyRecords[$id] ?? throw new LogicException('つぶやきがありません');
     }
 
     /**
@@ -114,6 +119,38 @@ class MockTweetRepository implements TweetRepository
      */
     public function retweet(Tweet $tweet, User $user): Tweet
     {
-        throw new RuntimeException('unimplemented');
+        $newTweet = new Tweet(
+            id: new Identified($this->autoIncrement),
+            user_id: $user->id->value(),
+            type: TweetType::Retweet,
+            text: '',
+            target_id: $tweet->id,
+            created_at: Carbon::now()->format('yyyy-mm-dd hh:ii:ss'),
+            updated_at: Carbon::now()->format('yyyy-mm-dd hh:ii:ss'),
+        );
+        $this->dummyRecords[$newTweet->id->value()] = $newTweet;
+        $this->autoIncrement++;
+        return $newTweet;
+    }
+
+    /**
+     * リツイートを探す
+     * @param User $user リツイートしたユーザー
+     * @param Id $targetId リツイートしたつぶやきのID
+     * @return Tweet|null
+     */
+    public function findRetweet(User $user, Id $targetId): ?Tweet
+    {
+        foreach ($this->dummyRecords as $tweet) {
+            /** @var Tweet $tweet */
+            if (
+                $tweet->user_id === $user->id->value()
+                && $tweet->type == TweetType::Retweet
+                && $tweet->target_id->equal($targetId)
+            ) {
+                return $tweet;
+            }
+        }
+        return null;
     }
 }

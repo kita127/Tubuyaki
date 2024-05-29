@@ -104,6 +104,10 @@ class TweetService
         if ($tweet->isOwner($user)) {
             throw new LogicException('自分のつぶやきにはリツイートできません');
         }
+        $exists = $this->tweetRetriever->findRetweetByTargetId($user, $tweet->id);
+        if ($exists) {
+            throw new LogicException('同じつぶやきに再度リツイートしています');
+        }
         $this->tweetRepository->retweet($tweet, $user->getEntity());
     }
 }

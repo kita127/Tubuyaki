@@ -31,9 +31,7 @@ class TweetServiceTest extends TestCase
 
     public function test01_01_自分のつぶやきはリツイートできない(): void
     {
-        $retriver = new TweetRetriever($this->tweetRepository, $this->userRepository);
-        $service = new TweetService($this->tweetRepository, $this->userRepository, $retriver);
-
+        $service = $this->createService();
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('自分のつぶやきにはリツイートできません');
 
@@ -41,5 +39,27 @@ class TweetServiceTest extends TestCase
         $me = $users->shift();
         $targetTweet = $this->tweetCreator->create($me, '自分のつぶやき', TweetType::Normal);
         $service->retweet($targetTweet, $me);
+    }
+
+    // TODO: FeatureTestも書く
+    public function test01_02_一度リツイートしたつぶやきに対してリツイートできない(): void
+    {
+        $service = $this->createService();
+
+        $users = $this->userAssistance->createUsers(2);
+        $me = $users->shift();
+        $other = $users->shift();
+        $targetTweet = $this->tweetCreator->create($other, '他人のつぶやき', TweetType::Normal);
+        $service->retweet($targetTweet, $me);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('同じつぶやきに再度リツイートしています');
+        $service->retweet($targetTweet, $me);
+    }
+
+    private function createService(): TweetService
+    {
+        $retriver = new TweetRetriever($this->tweetRepository, $this->userRepository);
+        return new TweetService($this->tweetRepository, $this->userRepository, $retriver);
     }
 }

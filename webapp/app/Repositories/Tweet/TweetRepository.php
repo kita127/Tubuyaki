@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Tweet;
 
+use App\Entities\Identifiable\Id;
 use App\Entities\Tweet;
 use App\Entities\User;
 use Illuminate\Support\Collection;
@@ -72,4 +73,12 @@ interface TweetRepository
      * @return Tweet 作成したリツイート
      */
     public function retweet(Tweet $tweet, User $user): Tweet;
+
+    /**
+     * リツイートを探す
+     * @param User $user リツイートしたユーザー
+     * @param Id $targetId リツイートしたつぶやきのID
+     * @return Tweet|null
+     */
+    public function findRetweet(User $user, Id $targetId): ?Tweet;
 }

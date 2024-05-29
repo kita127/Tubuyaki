@@ -2,6 +2,7 @@
 
 namespace Tests\Lib;
 
+use App\Entities\Identifiable\Id;
 use App\Entities\Identifiable\Unidentified;
 use App\Entities\Tweet;
 use App\Entities\TweetType;
@@ -18,9 +19,9 @@ class TweetCreator
     ) {
     }
 
-    public function create(TubuyakiUser $user, string $content, TweetType $type): Tweet
+    public function create(TubuyakiUser $user, string $content, TweetType $type = TweetType::Normal, Id $targetId = new Unidentified()): Tweet
     {
-        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content, new Unidentified());
+        $tweet = new Tweet(new Unidentified(), $user->id->value(), $type, $content, $targetId);
         return $this->tweetRepository->save($tweet);
     }
 

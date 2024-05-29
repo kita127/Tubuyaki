@@ -11,6 +11,7 @@ use App\Models\Tweet as ElqTweet;
 use Illuminate\Support\Collection;
 use LogicException;
 use App\Entities\Entity;
+use App\Entities\Identifiable\Id;
 use App\Entities\Identifiable\Unidentified;
 use App\Entities\TweetType;
 use App\Models\Reply as ElqReply;
@@ -258,5 +259,24 @@ class ElqTweetRepository implements TweetRepository, Modifiable
             ? $elqTweet->tweetDetail->updated_at : $elqTweet->updated_at;
         $elqTweet->save();
         return $elqTweet->toEntity();
+    }
+
+    /**
+     * リツイートを探す
+     * @param User $user リツイートしたユーザー
+     * @param Id $targetId リツイートしたつぶやきのID
+     * @return Tweet|null
+     */
+    public function findRetweet(User $user, Id $targetId): ?Tweet
+    {
+        $tweetTable = (new ElqTweet())->getTable();
+        $retweetTable = (new ElqRetweet())->getTable();
+        /** @var ElqTweet $retweet */
+        $retweet = ElqTweet::query()
+            ->join($retweetTable, "{$tweetTable}.id", '=', "{$retweetTable}.tweet_id")
+            ->where("{$tweetTable}.user_id", '=', $user->id->value())
+            ->where("{$retweetTable}.target_id", "=", $targetId->value())
+            ->first();
+        return $retweet?->toEntity();
     }
 }

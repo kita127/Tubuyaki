@@ -2,6 +2,7 @@
 
 namespace App\Services\Tweet;
 
+use App\Entities\Identifiable\Id;
 use App\Entities\Identifiable\Identified;
 use App\Repositories\Tweet\TweetRepository;
 use App\Entities\Tweet as EntityTweet;
@@ -48,5 +49,19 @@ class TweetRetriever
                 throw new LogicException();
         }
         return $tweet;
+    }
+
+    /**
+     * 
+     * @param TubuyakiUser $user リツイートしたユーザー
+     * @param Id $targetId リツイートしたつぶやきのID
+     * @return null|Tweet 
+     * @throws LogicException 
+     */
+    public function findRetweetByTargetId(TubuyakiUser $user, Id $targetId): ?Tweet
+    {
+        $retweet = $this->tweetRepository->findRetweet($user->getEntity(), $targetId);
+        if (is_null($retweet)) return null;
+        return $this->createTweetFromEntity($retweet);
     }
 }
