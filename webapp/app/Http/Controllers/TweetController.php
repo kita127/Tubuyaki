@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\Tweet\TweetService;
 use Illuminate\Http\Response;
+use LogicException;
 
 class TweetController extends Controller
 {
@@ -92,7 +93,11 @@ class TweetController extends Controller
     public function retweet(Request $request, int $id): Response
     {
         $user = $request->user();
-        $this->service->retweet($id, $user);
+        try {
+            $this->service->retweet($id, $user);
+        } catch (LogicException $e) {
+            return response($e->getMessage(), ResponseStatus::BAD_REQUEST);
+        }
         return response('', ResponseStatus::CREATED);
     }
 }

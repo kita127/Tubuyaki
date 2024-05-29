@@ -367,6 +367,26 @@ class TweetControllerTest extends TestCase
         $this->assertSame('retweet', $tweet->type->value);
     }
 
+    /**
+     * TweetController::retweet
+     */
+    public function test06_02_一度リツイートしたつぶやきに対してリツイートできない(): void
+    {
+        // 準備
+        $me = $this->userAssistance->createUser();
+        $other = $this->userAssistance->createUsers(1)->first();
+        /** @var Tweet $othersTweet */
+        $othersTweet = $this->tweetCreator->createTweets($other, 1, TweetType::Normal)->first();
+        $this->tweetCreator->create($me, '', TweetType::Retweet, $othersTweet->id);
+
+        // 実行
+        $response = $this->actingAs($me)->post("api/tweets/{$othersTweet->id->value()}/retweet", []);
+
+        // 検証
+        $response->assertBadRequest();
+        $this->assertSame('同じつぶやきに再度リツイートしています', $response->getContent());
+    }
+
     public function test07_01_つぶやきIDを指定してつぶやきの詳細を取得する(): void
     {
         // 準備

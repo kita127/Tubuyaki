@@ -274,9 +274,13 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         /** @var ElqTweet $retweet */
         $retweet = ElqTweet::query()
             ->join($retweetTable, "{$tweetTable}.id", '=', "{$retweetTable}.tweet_id")
+            ->select(["{$tweetTable}.id as id"])
             ->where("{$tweetTable}.user_id", '=', $user->id->value())
             ->where("{$retweetTable}.target_id", "=", $targetId->value())
             ->first();
+        if (is_null($retweet)) return null;
+        // リレーションもほしいので再度取得する
+        $retweet = ElqTweet::query()->findOrFail($retweet->id);
         return $retweet?->toEntity();
     }
 }
