@@ -28,8 +28,9 @@ class ElqCommonRepository
      */
     public function findAllBy(array|Builder $where): Collection
     {
+        $query = $this->model->newQuery();
         if (is_array($where)) {
-            $query = $this->createWhereQuery($where);
+            $query = $this->createWhereQuery($query, $where);
         } elseif ($where instanceof Builder) {
             $query = $where;
         } else {
@@ -37,7 +38,7 @@ class ElqCommonRepository
         }
         /** @var Collection<BaseModel> $models */
         $models = $query->get();
-        return $models->map(fn(BaseModel $f) => $f->toEntity())->keyBy('id');
+        return $models->map(fn (BaseModel $f) => $f->toEntity())->keyBy('id');
     }
 
     /**
@@ -46,8 +47,9 @@ class ElqCommonRepository
      */
     public function findOneBy(array|Builder $where): ?Entity
     {
+        $query = $this->model->newQuery();
         if (is_array($where)) {
-            $query = $this->createWhereQuery($where);
+            $query = $this->createWhereQuery($query, $where);
         } elseif ($where instanceof Builder) {
             $query = $where;
         } else {
@@ -106,16 +108,15 @@ class ElqCommonRepository
     }
 
     /**
+     * @param Builder $query
      * @param array<string, mixed> $where
      * @return Builder
      */
-    public function createWhereQuery(array $where): Builder
+    public function createWhereQuery(Builder $query, array $where): Builder
     {
-        $query = $this->model->newQuery();
         foreach ($where as $key => $value) {
             $query->where($key, $value);
         }
         return $query;
     }
-
 }

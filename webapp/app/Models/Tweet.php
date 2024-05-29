@@ -44,7 +44,6 @@ class Tweet extends BaseModel
 
     public function toEntity(): Entity
     {
-        // TODO: Eagerローディングに改修する
         /** @var TweetDetail $tweetDetail */
         $tweetDetail = $this->tweetDetail;
         /** @var Retweet $retweet */

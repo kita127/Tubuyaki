@@ -74,8 +74,10 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         ?array $orderBy = null,
         string $description = 'asc'
     ): Collection {
+        $query = $this->model->newQuery();
+        $query = $this->addWith($query);
         if (is_array($where)) {
-            $query = $this->commonRepo->createWhereQuery($where);
+            $query = $this->commonRepo->createWhereQuery($query, $where);
         } elseif ($where instanceof Builder) {
             $query = $where;
         } else {
@@ -126,7 +128,9 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         if (!is_array($values[0])) {
             throw new LogicException();
         }
-        $query = $this->model->query()->whereIn($keys[0], $values[0]);
+        $query = $this->model->query();
+        $query = $this->addWith($query);
+        $query->whereIn($keys[0], $values[0]);
 
         if ($offset) {
             $query->skip($offset);
@@ -165,7 +169,9 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         $replyRelations = ElqReply::where('to_tweet_id', $tweet->id->value())->get();
         $replyIdList = $replyRelations->pluck('tweet_id');
 
-        $query = ElqTweet::whereIn('id', $replyIdList->all());
+        $query = $this->model->newQuery();
+        $query = $this->addWith($query);
+        $query->whereIn('id', $replyIdList->all());
         if ($order) {
             if ($by !== 'asc' && $by !== 'desc') {
                 throw new LogicException();
@@ -282,5 +288,14 @@ class ElqTweetRepository implements TweetRepository, Modifiable
         // リレーションもほしいので再度取得する
         $retweet = ElqTweet::query()->findOrFail($retweet->id);
         return $retweet?->toEntity();
+    }
+
+    private function addWith(Builder $query): Builder
+    {
+        return $query->with([
+            'tweetDetail',
+            'retweet',
+            'reply',
+        ]);
     }
 }
