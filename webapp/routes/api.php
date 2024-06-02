@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Follow\FollowController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\TweetController;
 use App\Http\Controllers\User\UserController;
@@ -16,6 +18,10 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::post('/login', [LoginController::class, 'authenticate']);
+Route::post('/logout', [LogoutController::class, 'logout']);
+Route::middleware('auth:sanctum')->get('/users', [UserController::class, 'users']);
 
 // 認証後のAPI
 Route::middleware('auth:sanctum')->group(function () {
