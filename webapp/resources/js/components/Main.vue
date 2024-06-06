@@ -3,14 +3,6 @@
     <div>
         <button type="button" v-on:click="logout">logout</button>
     </div>
-    <div>
-        <input type="email" name="email" v-model="email" required autofocus>
-    </div>
-    <div>
-        <p>password</p>
-        <input type="text" name="password" v-model="password">
-    </div>
-    <button v-on:click="login">login</button>
 
     <button v-on:click="getUsers">users</button>
     <div v-for="user in users">{{ user }}</div>
@@ -19,20 +11,11 @@
 <script lang="ts" setup>
 import axios, { AxiosInstance } from "axios";
 import { ref } from "vue";
-import { onMounted } from 'vue'
+import { onBeforeMount } from 'vue'
+import { useRouter } from 'vue-router'
 
 let http: AxiosInstance;
-
-const email = ref<string>('');
-const password = ref<string>('');
-const login = async () => {
-    http.get('/sanctum/csrf-cookie').then((res) => {
-        // ログイン処理
-        http.post('/api/login', { email: email.value, password: password.value }).then((res) => {
-            console.log(res);
-        });
-    })
-};
+const router = useRouter();
 
 const logout = (): void => {
     http.post("/api/logout");
@@ -47,12 +30,17 @@ const getUsers = async () => {
     users.value.push(data[3]);
 };
 
-onMounted(() => {
+onBeforeMount(async () => {
     http = axios.create({
         baseURL: 'http://localhost',
         withCredentials: true,
     });
-    console.log('ページが読み込まれました！')
+    await http.get('/sanctum/csrf-cookie');
+    try {
+        await http.get('/api/users/me');
+    } catch (err) {
+        router.push({ name: 'Login' });
+    }
 })
 
 </script>
