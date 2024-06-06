@@ -41,7 +41,7 @@ onBeforeMount(async () => {
     } catch (err) {
         router.push({ name: 'Login' });
     }
-})
+});
 
 </script>
 
