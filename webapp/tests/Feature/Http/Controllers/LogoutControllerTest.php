@@ -25,7 +25,7 @@ class LogoutControllerTest extends TestCase
         );
 
         // 実行
-        $response = $this->actingAs($user)->post('/logout');
+        $response = $this->actingAs($user)->post('/api/logout');
 
         // 検証
         $this->assertSame(302, $response->getStatusCode(), 'ログアウト後はリダイレクト');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Constant\ResponseStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,6 @@ class LoginController extends Controller
 
             return response()->json(Auth::user());
         }
-        return response()->json([], 401);
+        return response()->json([], ResponseStatus::UNAUTHORIZED);
     }
 }

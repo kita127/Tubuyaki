@@ -23,15 +23,23 @@ class LoginControllerTest extends TestCase
         $user = $this->createUser();
 
         // 実行
-        $response = $this->post('/login', [
+        $response = $this->post('/api/login', [
             'email' => 'test_user@example.com',
             'password' => 'testuserpass',
         ]);
 
         // 検証
-        $this->assertSame(302, $response->getStatusCode(), '認証成功後はリダイレクト');
-        $response->assertRedirect('');
-        $response->assertSessionHasNoErrors();
+        $this->assertSame(200, $response->getStatusCode());
+        $content = $response->json();
+        $this->assertSame(
+            [
+                'id' => $user->id->value(),
+                'account_name' => 'test_user',
+                'name' => '検証次郎',
+                'email' => 'test_user@example.com',
+            ],
+            $content
+        );
     }
 
     /**
@@ -43,14 +51,13 @@ class LoginControllerTest extends TestCase
         $user = $this->createUser();
 
         // 実行
-        $response = $this->post('/login', [
+        $response = $this->post('/api/login', [
             'email' => 'test_user@example.com',
             'password' => 'invalid',
         ]);
 
         // 検証
-        $this->assertSame(302, $response->getStatusCode());
-        $response->assertSessionHasErrors(['email' => 'The provided credentials do not match our records.']);
+        $this->assertSame(401, $response->getStatusCode());
     }
 
     public function test01_03_emailが不一致はリダイレクト(): void
@@ -59,19 +66,18 @@ class LoginControllerTest extends TestCase
         $user = $this->createUser();
 
         // 実行
-        $response = $this->post('/login', [
+        $response = $this->post('/api/login', [
             'email' => 'test_user@example.hoge',
             'password' => 'testuserpass',
         ]);
 
         // 検証
-        $this->assertSame(302, $response->getStatusCode());
-        $response->assertSessionHasErrors(['email' => 'The provided credentials do not match our records.']);
+        $this->assertSame(401, $response->getStatusCode());
     }
 
     public function test02_01_未ログイン時に認証の必要なAPIにはアクセスできない(): void
     {
-        $response = $this->get("/api/user");
+        $response = $this->get("/api/users/me");
         $response->assertStatus(302);
     }
 
@@ -88,7 +94,9 @@ class LoginControllerTest extends TestCase
             email: 'test_user@example.com',
             password: 'testuserpass',
         );
-        app()->make(UserRepository::class)->save($user);
+        /** @var UserRepository $repo */
+        $repo = app()->make(UserRepository::class);
+        $user = $repo->save($user);
         return $user;
     }
 }

@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [LoginController::class, 'authenticate']);
 Route::post('/logout', [LogoutController::class, 'logout']);
+Route::post('/users', [UserController::class, 'store']);
 Route::middleware('auth:sanctum')->get('/users', [UserController::class, 'users']);
 
 // 認証後のAPI
@@ -58,4 +59,3 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-Route::post('/users', [UserController::class, 'store']);
