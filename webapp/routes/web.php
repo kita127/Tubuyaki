@@ -15,11 +15,7 @@ use App\Http\Controllers\LoginController;
 |
 */
 
-Route::get('/login', [LoginController::class, 'index'])->name('login');
-Route::post('/login', [LoginController::class, 'authenticate']);
-Route::post('/logout', [LogoutController::class, 'logout']);
-
 Route::get('/{any}', function () {
     // 認証済みユーザーのみがこのルートにアクセス可能
     return view('index');
-})->where('any', '.*')->middleware('auth');
+})->where('any', '.*');

@@ -2,17 +2,31 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Entities\User;
 use App\Http\Constant\ResponseStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Requests\User\UserRequest;
+use App\Repositories\User\UserRepository;
 use App\Services\User\UserService;
 use App\Services\TubuyakiUser;
 use LogicException;
 
 class UserController extends Controller
 {
+    public function users(Request $request): JsonResponse
+    {
+        /** @var UserRepository $repo */
+        $repo = app()->make(UserRepository::class);
+        $users = $repo->findAllBy([]);
+        $array = $users->map(fn (User $u) => $u->name)->toArray();
+        return response()->json(
+            $array,
+            200,
+        );
+    }
+
     /**
      * Display a listing of the resource.
      */
