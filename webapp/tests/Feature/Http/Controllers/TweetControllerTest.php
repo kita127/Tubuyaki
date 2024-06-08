@@ -64,6 +64,7 @@ class TweetControllerTest extends TestCase
             [
                 'tweets' => [
                     [
+                        'id' => $tweet->id->value(),
                         'text' => 'つぶやきの内容',
                         'created_at' => $tweet->created_at,
                         'updated_at' => $tweet->updated_at,
@@ -135,6 +136,7 @@ class TweetControllerTest extends TestCase
             [
                 'tweets' => [
                     [
+                        'id' => $tweet->id->value(),
                         'text' => '他人のつぶやき',
                         'created_at' => $tweet->created_at,
                         'updated_at' => $tweet->updated_at,
