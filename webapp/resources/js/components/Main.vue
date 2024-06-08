@@ -9,7 +9,8 @@
         </div>
     </section>
     <section>
-        <div v-for="tweet in myTweets?.contents.tweets" v-bind:key="'tweet' + tweet.id">{{ tweet.tweet }}</div>
+        <div v-for="tweet in myTweets?.contents.tweets" v-bind:key="'tweet' + tweet.id" class="tweet">{{ tweet.text }}
+        </div>
     </section>
 
     <div>
@@ -53,7 +54,7 @@ type Tweets = {
     contents: {
         tweets: {
             id: number;
-            tweet: string;
+            text: string;
             created_at: string | null;
             updated_at: string | null;
         }[];
@@ -87,5 +88,8 @@ onBeforeMount(async () => {
 
 </script>
 
-<script setup>
-</script>
+<style scoped>
+.tweet {
+    border: 1px solid black;
+}
+</style>
