@@ -9,7 +9,8 @@
         </div>
     </section>
     <section>
-        <div v-for="tweet in timeline?.tweets" v-bind:key="'tweet' + tweet.id" class="tweet">{{ tweet.text }}
+        <div v-for="tweet in timeline?.tweets" v-bind:key="'tweet' + tweet.id" class="tweet">
+            {{ tweet.text }}
         </div>
     </section>
 
@@ -24,7 +25,7 @@
 <script lang="ts" setup>
 import axios, { AxiosInstance } from "axios";
 import { ref } from "vue";
-import { onBeforeMount } from 'vue'
+import { onBeforeMount, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
 let http: AxiosInstance;
@@ -84,7 +85,23 @@ const getUsers = async () => {
     users.value.push(data[3]);
 };
 
+const loadMore = async () => {
+    getTimeline(me.value?.id);
+}
+
+const handleScroll = () => {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+        loadMore()
+    }
+}
+
+// TODO: onBeforeMountとonMountedの違いを調べる
 onBeforeMount(async () => {
+});
+
+onMounted(async () => {
+    window.addEventListener('scroll', handleScroll)
+
     http = axios.create({
         baseURL: 'http://localhost',
         withCredentials: true,
@@ -92,8 +109,12 @@ onBeforeMount(async () => {
     await http.get('/sanctum/csrf-cookie');
     await getMe();
 
-    getTimeline(me.value?.id);
-});
+    loadMore()
+})
+
+onBeforeUnmount(() => {
+    window.removeEventListener('scroll', handleScroll)
+})
 
 </script>
 
