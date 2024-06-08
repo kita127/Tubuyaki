@@ -24,9 +24,12 @@ class DatabaseSeeder extends Seeder
 
         if (app()->isLocal()) {
             $this->call([
+                // 先に作成すべきマスターテーブル
+                TweetTypeSeeder::class,
+
+                // それ以外
                 UserSeeder::class,
                 UserDetailSeeder::class,
-                TweetTypeSeeder::class,
             ]);
         } elseif (app()->runningUnitTests()) {
             $this->call([
