@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
         User::factory()->has(
             Tweet::factory()->has(
                 TweetDetail::factory()
-            )->count(3)
+            )->count(100)
         )->count(3)->create();
     }
 }

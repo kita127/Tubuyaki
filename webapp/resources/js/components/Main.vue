@@ -50,23 +50,6 @@ const getMe = async () => {
     }
 };
 
-type Tweets = {
-    contents: {
-        tweets: {
-            id: number;
-            text: string;
-            created_at: string | null;
-            updated_at: string | null;
-        }[];
-        next: number | null;
-    };
-};
-const myTweets = ref<Tweets>();
-const getMyTweets = async () => {
-    const { data } = await http.get('/api/users/me/tweets');
-    myTweets.value = data;
-};
-
 type Timeline = {
     next: number | null;
     tweets: {
@@ -108,7 +91,7 @@ onBeforeMount(async () => {
     });
     await http.get('/sanctum/csrf-cookie');
     await getMe();
-    //    getMyTweets();
+
     getTimeline(me.value?.id);
 });
 
