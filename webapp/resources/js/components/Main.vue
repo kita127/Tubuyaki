@@ -7,19 +7,18 @@
             <span>ユーザー : </span>
             <span>{{ me?.name }}</span>
         </div>
+        <div>
+            <button type="button" v-on:click="logout">logout</button>
+        </div>
+        <button v-on:click="getUsers">users</button>
+        <div v-for="user in users">{{ user }}</div>
     </section>
     <section>
         <div v-for="tweet in tweets" v-bind:key="'tweet' + tweet.id" class="tweet">
             {{ tweet.text }}
         </div>
+        <button v-on:click="getTimeline">つぶやきを取得する</button>
     </section>
-
-    <div>
-        <button type="button" v-on:click="logout">logout</button>
-    </div>
-
-    <button v-on:click="getUsers">users</button>
-    <div v-for="user in users">{{ user }}</div>
 </template>
 
 <script lang="ts" setup>
@@ -71,13 +70,14 @@ type TimelineResponse = {
 };
 const tweets = ref<Tweet[]>([]);
 const next = ref<number | null>(0);
-const getTimeline = async (userId: number | undefined) => {
+const getTimeline = async () => {
+    const userId = me.value?.id;
     if (!userId) {
         router.push({ name: 'Login' });
     }
     if (next.value !== null) {
         const { data } = await http.get<{ contents: TimelineResponse }>(`/api/users/${userId}/timeline?index=${next.value}&count=20`);
-        tweets.value = data.contents.tweets;
+        tweets.value = tweets.value.concat(data.contents.tweets);
         next.value = data.contents.next;
     }
 };
@@ -91,37 +91,19 @@ const getUsers = async () => {
     users.value.push(data[3]);
 };
 
-const loadMore = async () => {
-    getTimeline(me.value?.id);
-}
-
-const handleScroll = () => {
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-        loadMore()
-    }
-}
-
 // TODO: onBeforeMountとonMountedの違いを調べる
 onBeforeMount(async () => {
 });
 
 onMounted(async () => {
-    window.addEventListener('scroll', handleScroll)
-
     http = axios.create({
         baseURL: 'http://localhost',
         withCredentials: true,
     });
     await http.get('/sanctum/csrf-cookie');
     await getMe();
-
-    loadMore()
+    getTimeline();
 })
-
-onBeforeUnmount(() => {
-    window.removeEventListener('scroll', handleScroll)
-})
-
 </script>
 
 <style scoped>
