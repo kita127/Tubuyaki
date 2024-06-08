@@ -9,7 +9,7 @@
         </div>
     </section>
     <section>
-        <div v-for="tweet in timeline?.tweets" v-bind:key="'tweet' + tweet.id" class="tweet">
+        <div v-for="tweet in tweets" v-bind:key="'tweet' + tweet.id" class="tweet">
             {{ tweet.text }}
         </div>
     </section>
@@ -51,29 +51,35 @@ const getMe = async () => {
     }
 };
 
-type Timeline = {
-    next: number | null;
-    tweets: {
+type Tweet = {
+    id: number;
+    text: string;
+    tweet_type: string;
+    user: {
         id: number;
-        text: string;
-        tweet_type: string;
-        user: {
-            id: number;
-            account_name: string;
-            name: string;
-        };
-        target_id: number | null;
-        created_at: string;
-        updated_at: string;
-    }[];
+        account_name: string;
+        name: string;
+    };
+    target_id: number | null;
+    created_at: string;
+    updated_at: string;
 };
-const timeline = ref<Timeline>();
+
+type TimelineResponse = {
+    next: number | null;
+    tweets: Tweet[];
+};
+const tweets = ref<Tweet[]>([]);
+const next = ref<number | null>(0);
 const getTimeline = async (userId: number | undefined) => {
     if (!userId) {
         router.push({ name: 'Login' });
     }
-    const { data } = await http.get<{ contents: Timeline }>(`/api/users/${userId}/timeline`);
-    timeline.value = data.contents;
+    if (next.value !== null) {
+        const { data } = await http.get<{ contents: TimelineResponse }>(`/api/users/${userId}/timeline?index=${next.value}&count=20`);
+        tweets.value = data.contents.tweets;
+        next.value = data.contents.next;
+    }
 };
 
 const users = ref<string[]>([]);
