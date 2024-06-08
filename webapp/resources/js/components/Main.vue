@@ -14,9 +14,9 @@
         <div v-for="user in users">{{ user }}</div>
     </section>
     <section>
-        <div v-for="tweet in tweets" v-bind:key="'tweet' + tweet.id" class="tweet">
-            {{ tweet.text }}
-        </div>
+        <template v-for="tweet in tweets" v-bind:key="'tweet' + tweet.id">
+            <Tweet v-bind:text="tweet.text"></Tweet>
+        </template>
         <button v-on:click="getTimeline">つぶやきを取得する</button>
     </section>
 </template>
@@ -26,6 +26,7 @@ import axios, { AxiosInstance } from "axios";
 import { ref } from "vue";
 import { onBeforeMount, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import Tweet from './Tweet.vue';
 
 let http: AxiosInstance;
 const router = useRouter();
