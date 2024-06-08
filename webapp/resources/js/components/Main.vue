@@ -9,7 +9,7 @@
         </div>
     </section>
     <section>
-        <div v-for="tweet in myTweets?.contents.tweets" v-bind:key="'tweet' + tweet.id" class="tweet">{{ tweet.text }}
+        <div v-for="tweet in timeline?.tweets" v-bind:key="'tweet' + tweet.id" class="tweet">{{ tweet.text }}
         </div>
     </section>
 
@@ -67,6 +67,31 @@ const getMyTweets = async () => {
     myTweets.value = data;
 };
 
+type Timeline = {
+    next: number | null;
+    tweets: {
+        id: number;
+        text: string;
+        tweet_type: string;
+        user: {
+            id: number;
+            account_name: string;
+            name: string;
+        };
+        target_id: number | null;
+        created_at: string;
+        updated_at: string;
+    }[];
+};
+const timeline = ref<Timeline>();
+const getTimeline = async (userId: number | undefined) => {
+    if (!userId) {
+        router.push({ name: 'Login' });
+    }
+    const { data } = await http.get<{ contents: Timeline }>(`/api/users/${userId}/timeline`);
+    timeline.value = data.contents;
+};
+
 const users = ref<string[]>([]);
 const getUsers = async () => {
     users.value = [];
@@ -82,8 +107,9 @@ onBeforeMount(async () => {
         withCredentials: true,
     });
     await http.get('/sanctum/csrf-cookie');
-    getMe();
-    getMyTweets();
+    await getMe();
+    //    getMyTweets();
+    getTimeline(me.value?.id);
 });
 
 </script>
