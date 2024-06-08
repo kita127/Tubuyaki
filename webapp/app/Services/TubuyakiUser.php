@@ -116,14 +116,6 @@ class TubuyakiUser implements Authenticatable, Arrayable
         return $this->entity->toArray();
     }
 
-    public function toRistrictedArray(): array
-    {
-        $array = $this->toArray();
-        unset($array['password']);
-        unset($array[$this->entity->getRememberTokenName()]);
-        return $array;
-    }
-
     public function getEntity(): UserEntity
     {
         return $this->entity;
