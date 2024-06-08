@@ -1,5 +1,17 @@
 <template>
-    <div>Main Menu</div>
+    <section>
+        <h1>Main Menu</h1>
+    </section>
+    <section>
+        <div>
+            <span>ユーザー : </span>
+            <span>{{ me?.name }}</span>
+        </div>
+    </section>
+    <section>
+        <div v-for="tweet in myTweets?.contents.tweets" v-bind:key="'tweet' + tweet.id">{{ tweet.tweet }}</div>
+    </section>
+
     <div>
         <button type="button" v-on:click="logout">logout</button>
     </div>
@@ -21,6 +33,39 @@ const logout = (): void => {
     http.post("/api/logout");
 };
 
+type User = {
+    id: number;
+    account_name: string;
+    name: string;
+    email: string;
+};
+const me = ref<User>();
+const getMe = async () => {
+    try {
+        const { data } = await http.get<User>('/api/users/me');
+        me.value = data;
+    } catch (err) {
+        router.push({ name: 'Login' });
+    }
+};
+
+type Tweets = {
+    contents: {
+        tweets: {
+            id: number;
+            tweet: string;
+            created_at: string | null;
+            updated_at: string | null;
+        }[];
+        next: number | null;
+    };
+};
+const myTweets = ref<Tweets>();
+const getMyTweets = async () => {
+    const { data } = await http.get('/api/users/me/tweets');
+    myTweets.value = data;
+};
+
 const users = ref<string[]>([]);
 const getUsers = async () => {
     users.value = [];
@@ -36,11 +81,8 @@ onBeforeMount(async () => {
         withCredentials: true,
     });
     await http.get('/sanctum/csrf-cookie');
-    try {
-        await http.get('/api/users/me');
-    } catch (err) {
-        router.push({ name: 'Login' });
-    }
+    getMe();
+    getMyTweets();
 });
 
 </script>

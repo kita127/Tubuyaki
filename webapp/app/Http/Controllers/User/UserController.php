@@ -35,7 +35,7 @@ class UserController extends Controller
         /** @var TubuyakiUser $user */
         $user = $request->user();
         return response()->json(
-            $user->toRistrictedArray(),
+            $user->toArray(),
             200,
         );
     }
