@@ -30,9 +30,16 @@ $ make down
 
 ### Test
 
+#### Back End
+
 `apache`コンテナに入って以下のコマンドを実行する。
 
 ```
 php artisan test --env=testing
 ```
 
+#### Front End
+
+```
+npm run test
+```
