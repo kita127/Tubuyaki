@@ -8,6 +8,7 @@
         <input type="text" name="password" v-model="password">
     </div>
     <button v-on:click="login">login</button>
+    <router-link to="/">ホームへ</router-link>
 </template>
 
 <script lang="ts" setup>

@@ -7,25 +7,26 @@
             <span>ユーザー : </span>
             <span>{{ me?.name }}</span>
         </div>
+        <div>
+            <button type="button" v-on:click="logout">logout</button>
+        </div>
+        <button v-on:click="getUsers">users</button>
+        <div v-for="user in users">{{ user }}</div>
     </section>
     <section>
-        <div v-for="tweet in timeline?.tweets" v-bind:key="'tweet' + tweet.id" class="tweet">{{ tweet.text }}
-        </div>
+        <template v-for="tweet in tweets" v-bind:key="'tweet' + tweet.id">
+            <Tweet v-bind:text="tweet.text"></Tweet>
+        </template>
+        <button v-on:click="getTimeline">つぶやきを取得する</button>
     </section>
-
-    <div>
-        <button type="button" v-on:click="logout">logout</button>
-    </div>
-
-    <button v-on:click="getUsers">users</button>
-    <div v-for="user in users">{{ user }}</div>
 </template>
 
 <script lang="ts" setup>
 import axios, { AxiosInstance } from "axios";
 import { ref } from "vue";
-import { onBeforeMount } from 'vue'
+import { onBeforeMount, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import Tweet from './Tweet.vue';
 
 let http: AxiosInstance;
 const router = useRouter();
@@ -50,29 +51,36 @@ const getMe = async () => {
     }
 };
 
-type Timeline = {
-    next: number | null;
-    tweets: {
+type Tweet = {
+    id: number;
+    text: string;
+    tweet_type: string;
+    user: {
         id: number;
-        text: string;
-        tweet_type: string;
-        user: {
-            id: number;
-            account_name: string;
-            name: string;
-        };
-        target_id: number | null;
-        created_at: string;
-        updated_at: string;
-    }[];
+        account_name: string;
+        name: string;
+    };
+    target_id: number | null;
+    created_at: string;
+    updated_at: string;
 };
-const timeline = ref<Timeline>();
-const getTimeline = async (userId: number | undefined) => {
+
+type TimelineResponse = {
+    next: number | null;
+    tweets: Tweet[];
+};
+const tweets = ref<Tweet[]>([]);
+const next = ref<number | null>(0);
+const getTimeline = async () => {
+    const userId = me.value?.id;
     if (!userId) {
         router.push({ name: 'Login' });
     }
-    const { data } = await http.get<{ contents: Timeline }>(`/api/users/${userId}/timeline`);
-    timeline.value = data.contents;
+    if (next.value !== null) {
+        const { data } = await http.get<{ contents: TimelineResponse }>(`/api/users/${userId}/timeline?index=${next.value}&count=20`);
+        tweets.value = tweets.value.concat(data.contents.tweets);
+        next.value = data.contents.next;
+    }
 };
 
 const users = ref<string[]>([]);
@@ -84,17 +92,19 @@ const getUsers = async () => {
     users.value.push(data[3]);
 };
 
+// TODO: onBeforeMountとonMountedの違いを調べる
 onBeforeMount(async () => {
+});
+
+onMounted(async () => {
     http = axios.create({
         baseURL: 'http://localhost',
         withCredentials: true,
     });
     await http.get('/sanctum/csrf-cookie');
     await getMe();
-
-    getTimeline(me.value?.id);
-});
-
+    getTimeline();
+})
 </script>
 
 <style scoped>
