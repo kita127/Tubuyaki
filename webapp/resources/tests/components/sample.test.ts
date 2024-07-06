@@ -1,6 +1,7 @@
-// sum.test.js
-import { expect, test } from 'vitest'
+import {beforeEach, describe, expect, test} from "vitest";
 
-test('adds 1 + 2 to equal 3', () => {
-    expect(1 + 2).toBe(3)
+describe("HelloWorld", () => {
+  test("hello world", async () => {
+    expect("HelloWorld").toBe('HelloWorld')
+  })
 })
